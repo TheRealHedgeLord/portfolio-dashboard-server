@@ -1,0 +1,5 @@
+{
+  "network_id": 42161,
+  "rpc_url": "https://arb1.arbitrum.io/rpc",
+  "symbol": "ETH"
+}

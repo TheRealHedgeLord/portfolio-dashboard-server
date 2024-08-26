@@ -1,0 +1,5 @@
+{
+  "network_id": 1,
+  "rpc_url": "$ETHEREUM_RPC_HTTP_URL",
+  "symbol": "ETH"
+}
