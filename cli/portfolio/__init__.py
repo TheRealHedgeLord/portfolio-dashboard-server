@@ -1,5 +1,6 @@
 import os
 import time
+import uuid
 import traceback
 import asyncio
 
@@ -19,6 +20,7 @@ from web2.telegram import TelegramBot
 _ALL_MODULES = [CoinPortfolio, CompoundPortfolio, GMXPortfolio, NFTPortfolio]
 
 _database = RelationalDatabase()
+
 _PORTFOLIO_SNAPSHOT_TABLE_NAME = "portfolio_snapshots"
 
 if _PORTFOLIO_SNAPSHOT_TABLE_NAME not in _database.get_all_tables():
@@ -32,6 +34,20 @@ if _PORTFOLIO_SNAPSHOT_TABLE_NAME not in _database.get_all_tables():
                 "report": "json",
                 "platform_exposure": "json",
                 "sector_exposure": "json",
+            },
+        )
+    )
+
+_PORTFOLIO_LOGS_TABLE_NAME = "portfolio_logs"
+
+if _PORTFOLIO_LOGS_TABLE_NAME not in _database.get_all_tables():
+    _database.write(
+        Query.create_table(
+            _PORTFOLIO_LOGS_TABLE_NAME,
+            {
+                "timestamp": "integer",
+                "error_id": "string",
+                "stack_trace": "string",
             },
         )
     )
@@ -73,10 +89,23 @@ async def take_snapshot(passphrase: str) -> None:
             )
         )
     except:
+        timestamp = int(time.time())
+        error_id = uuid.uuid4().hex
+        stack_trace = traceback.format_exc()
+        _database.write(
+            Query.insert_row(
+                _PORTFOLIO_LOGS_TABLE_NAME,
+                {
+                    "timestamp": timestamp,
+                    "error_id": error_id,
+                    "stack_trace": stack_trace,
+                },
+            )
+        )
         telegram = TelegramBot(os.environ["TELEGRAM_BOT_TOKEN"])
         await telegram.send_message(
             os.environ["SERVER_LOG_CHAT_ID"],
-            traceback.format_exc(),
+            f"Error happend when taking snapshot, id: {error_id}",
         )
 
 
