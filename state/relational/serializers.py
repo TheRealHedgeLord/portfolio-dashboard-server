@@ -2,11 +2,12 @@ import json
 
 from typing import Literal
 from decimal import Decimal
+from base64 import b64encode, b64decode
 
 from exceptions import SerializationError
 
 ColumnType = Literal["string", "integer", "decimal", "bool", "json", "bytes"]
-SQLiteType = Literal["TEXT", "INTEGER", "REAL", "BLOB"]
+SQLiteType = Literal["TEXT", "INTEGER", "BLOB"]
 ValueType = str | int | Decimal | bool | dict | list | bytes
 SQLiteValueType = str | int | bytes
 
@@ -98,3 +99,25 @@ def to_sqlite(value: ValueType) -> str:
         return _json_to_sqlite(value)
     else:
         return _bytes_to_sqlite(value)
+
+
+def to_parsed(sqlite_value: SQLiteValueType) -> str:
+    if isinstance(sqlite_value, str):
+        return "0" + sqlite_value
+    elif isinstance(sqlite_value, int):
+        return "1" + str(sqlite_value)
+    else:
+        return "2" + b64encode(sqlite_value).decode()
+
+
+def from_parsed(parsed_value: str) -> SQLiteValueType:
+    type_id = parsed_value[0]
+    value = parsed_value[1::]
+    if type_id == "0":
+        return value
+    elif type_id == "1":
+        return int(value)
+    elif type_id == "2":
+        return b64decode(value)
+    else:
+        raise ValueError(f"invalid parsed value {parsed_value}")

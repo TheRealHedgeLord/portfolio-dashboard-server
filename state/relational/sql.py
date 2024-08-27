@@ -3,7 +3,12 @@ from __future__ import annotations
 from typing import Literal
 from typing_extensions import Self
 
-from state.relational.types import ColumnType, ValueType, COLUMN_TYPE_MAP, to_sqlite
+from state.relational.serializers import (
+    ColumnType,
+    ValueType,
+    COLUMN_TYPE_MAP,
+    to_sqlite,
+)
 
 
 class Query(str):

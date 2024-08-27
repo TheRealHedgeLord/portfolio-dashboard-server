@@ -1,11 +1,19 @@
+from __future__ import annotations
+
 import json
 
 from os import environ
+from base64 import b64encode, b64decode
 from functools import cached_property, cache
 from typing import Literal, Any
-from copy import deepcopy
 
-from state.relational.types import from_sqlite, ValueType
+from state.relational.serializers import (
+    from_sqlite,
+    ValueType,
+    SQLiteValueType,
+    from_parsed,
+    to_parsed,
+)
 
 _MAX_COLUMN_WIDTH = (
     int(environ["MAX_COLUMN_WIDTH"]) if "MAX_COLUMN_WIDTH" in environ else 32
@@ -29,9 +37,23 @@ def _display_value(value: Any, width: int) -> str:
 
 
 class Table:
-    def __init__(self, columns: list[str], rows: list[tuple]) -> None:
+    @staticmethod
+    def from_parsed(parsed_table: str) -> Table:
+        columns, parsed_rows = json.loads(b64decode(parsed_table))
+        rows = [[from_parsed(value) for value in row] for row in parsed_rows]
+        return Table(columns, rows)
+
+    def __init__(self, columns: list[str], rows: list[list[SQLiteValueType]]) -> None:
         self._columns = columns
-        self._rows = [[from_sqlite(value) for value in row] for row in rows]
+        self._rows = rows
+
+    @cached_property
+    def parsed(self) -> str:
+        compact = [
+            self._columns,
+            [[to_parsed(value) for value in row] for row in self._rows],
+        ]
+        return b64encode(json.dumps(compact).encode()).decode()
 
     @cached_property
     def _displayed_rows(self) -> list[list[ValueType | None]]:
@@ -104,7 +126,7 @@ class Table:
 
     @property
     def rows(self) -> list[list[ValueType | None]]:
-        return deepcopy(self._rows)
+        return [[from_sqlite(value) for value in row] for row in self._rows]
 
     @cached_property
     def row_count(self) -> int:
