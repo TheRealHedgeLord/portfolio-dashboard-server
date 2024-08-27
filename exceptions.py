@@ -25,3 +25,8 @@ class SerializationError(BaseException):
 class HTTPException(BaseException):
     def __init__(self, name: str, status_code: int, message: str) -> None:
         super().__init__(Exception(f"({name}) status code {status_code}, {message}"))
+
+
+class InvalidValue(BaseException):
+    def __init__(self, value_type: str, value: Any) -> None:
+        super().__init__(ValueError(f"Invalid {value_type}: {value}"))

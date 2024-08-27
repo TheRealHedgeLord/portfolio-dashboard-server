@@ -86,11 +86,8 @@ class Query(str):
         return Query(f"SELECT {column_statement} FROM {table_name}{where_statement}")
 
     @staticmethod
-    def delete_row(
+    def delete_rows(
         table_name: str, match_values: dict[str, ValueType] | None = None
     ) -> Query:
         where_statement = Query._get_statement("WHERE", match_values)
         return Query(f"DELETE FROM {table_name}{where_statement}")
-
-    @staticmethod
-    def delete_row_by_index(table_name: str, index: int) -> Query: ...
