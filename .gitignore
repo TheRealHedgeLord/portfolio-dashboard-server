@@ -165,3 +165,4 @@ test.py
 state/relational/.database.db
 state/relational/.legacy_database.db
 state/graph/.database
+get_snapshot.py
