@@ -39,7 +39,7 @@ class Client(HTTPClient):
             data=data,
             headers={"signature": signature},
         )
-        return response["stdout"]
+        return response["stdout"][0:-1]
 
     async def get_all_tables(self) -> list[str]:
         stdout = await self.execute("state_manager", "get_all_tables")
