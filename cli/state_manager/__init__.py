@@ -12,6 +12,7 @@ async def get_all_tables() -> None:
 
 async def get_table(table_name: str, cli_kwargs: str) -> None:
     kwargs = from_cli_arg(cli_kwargs)
+    print(kwargs)
     table = _relational_database.read(Query.get_table(table_name, **kwargs))  # type: ignore
     print(table.parsed)
 

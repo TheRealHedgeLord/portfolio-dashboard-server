@@ -4,6 +4,8 @@ from typing import Any
 from base64 import b64decode
 from decimal import Decimal
 
+from exceptions import InvalidValue
+
 
 def _decode_obj(obj: Any) -> Any:
     if isinstance(obj, list):
@@ -19,6 +21,10 @@ def _decode_obj(obj: Any) -> Any:
             return b64decode(value)
         elif type_id == "2":
             return Decimal(value)
+        else:
+            raise InvalidValue("encoded string", obj)
+    else:
+        return obj
 
 
 def from_cli_arg(cli_arg: str) -> dict | list:
