@@ -63,4 +63,4 @@ async def predict(year: str, month: str, date: str) -> None:
     print("Final User Share:", f"{round(final_ratio*100, 5)}%")
 
 
-methods = {"track_marks": track_marks, "show_data": get_data, "predict": predict}
+methods = {"track_marks": track_marks, "get_data": get_data, "predict": predict}
