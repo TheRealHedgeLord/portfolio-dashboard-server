@@ -101,24 +101,28 @@ def format_text(text: str, style: Style) -> str:
     return style + text + "\033[0m"
 
 
-def pretty_report(raw_report: str) -> None:
+def pretty_report(raw_report: str) -> str:
+    output = ""
     report = raw_report.replace("\t", " " * 8)
     lines = report.split("\n")
     width = max([len(line) for line in lines]) + 8
     separator = "|" + "-" * width + "|"
-    print(separator)
+    output += separator
     for line in lines:
         if line == "":
-            print(separator)
+            output += separator
         elif line[0] != " ":
-            print("|" + format_text(line, Style.Bold) + " " * (width - len(line)) + "|")
+            output += (
+                "|" + format_text(line, Style.Bold) + " " * (width - len(line)) + "|"
+            )
         else:
-            print("|" + line + " " * (width - len(line)) + "|")
+            output += "|" + line + " " * (width - len(line)) + "|"
+    return output
 
 
 def print_snapshot_report(
     timestamp: int, total_usd_value: Decimal, market_prices: dict, report: dict
-) -> None:
+) -> str:
     raw_report = f"Snapshot Time: {datetime.fromtimestamp(timestamp)}\n\n"
     raw_report += f"Total USD Value: ${round(total_usd_value, 2)}\n\n"
     raw_report += (

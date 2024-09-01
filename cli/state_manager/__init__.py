@@ -5,15 +5,15 @@ from cli.state_manager.serializers import from_cli_arg
 _relational_database = RelationalDatabase()
 
 
-async def get_all_tables() -> None:
+async def get_all_tables() -> str:
     tables = _relational_database.get_all_tables()
-    print(", ".join(tables))
+    return ", ".join(tables)
 
 
-async def get_table(table_name: str, cli_kwargs: str) -> None:
+async def get_table(table_name: str, cli_kwargs: str) -> str:
     kwargs = from_cli_arg(cli_kwargs)
     table = _relational_database.read(Query.get_table(table_name, **kwargs))  # type: ignore
-    print(table.parsed)
+    return table.parsed
 
 
 async def insert_row(table_name: str, cli_column_values: str) -> None:

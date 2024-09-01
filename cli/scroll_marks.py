@@ -31,11 +31,6 @@ async def track_marks(wallet_address: str) -> None:
     _database.write(Query.insert_row(_table, {"timestamp": timestamp, **user_data}))
 
 
-async def get_data() -> None:
-    table = _database.read(Query.get_table(_table))
-    print(table)
-
-
 async def predict(year: str, month: str, date: str) -> None:
     at_timestamp = int(datetime(int(year), int(month), int(date)).timestamp())
     table = _database.read(Query.get_table(_table))
@@ -63,4 +58,4 @@ async def predict(year: str, month: str, date: str) -> None:
     print("Final User Share:", f"{round(final_ratio*100, 5)}%")
 
 
-methods = {"track_marks": track_marks, "get_data": get_data, "predict": predict}
+methods = {"track_marks": track_marks, "predict": predict}

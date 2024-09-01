@@ -75,16 +75,4 @@ async def track_all_tokens() -> None:
         )
 
 
-async def get_token_prices() -> None:
-    tracked_tokens_table = _database.read(Query.get_table("tracked_tokens", ["symbol"]))
-    for symbol in tracked_tokens_table.get_column("symbol"):
-        print(symbol)
-        token_table = _database.read(Query.get_table(f"tracked_token_{symbol}"))
-        print(token_table)
-
-
-methods = {
-    "track_token": track_token,
-    "track_all_tokens": track_all_tokens,
-    "get_token_prices": get_token_prices,
-}
+methods = {"track_token": track_token, "track_all_tokens": track_all_tokens}

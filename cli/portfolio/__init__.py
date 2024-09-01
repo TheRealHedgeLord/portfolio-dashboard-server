@@ -109,13 +109,13 @@ async def take_snapshot(passphrase: str) -> None:
         )
 
 
-async def get_snapshot(index: str = "-1") -> None:
+async def get_snapshot(index: str = "-1") -> str:
     table = _database.read(Query.get_table(_PORTFOLIO_SNAPSHOT_TABLE_NAME))
     timestamp = table.get_column("timestamp")[int(index)]
     total_usd_value = table.get_column("total_usd_value")[int(index)]
     market_prices = table.get_column("market_prices")[int(index)]
     report = table.get_column("report")[int(index)]
-    print_snapshot_report(timestamp, total_usd_value, market_prices, report)  # type: ignore
+    return print_snapshot_report(timestamp, total_usd_value, market_prices, report)  # type: ignore
 
 
 methods = {"take_snapshot": take_snapshot, "get_snapshot": get_snapshot}
