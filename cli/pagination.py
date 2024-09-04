@@ -12,4 +12,4 @@ async def get_next_page(uuid: str) -> str:
     return content  # type: ignore
 
 
-methods = {"get_nex_page": get_next_page}
+methods = {"get_next_page": get_next_page}

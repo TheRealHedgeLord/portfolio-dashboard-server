@@ -39,7 +39,15 @@ class Client(HTTPClient):
             data=data,
             headers={"signature": signature},
         )
-        return response["content"][0:-1] if response["content"] else ""
+        next_page_id = response["next_page_id"]
+        content = response["content"][0:-1] if response["content"] else ""
+        if next_page_id == "0" * 32:
+            return content
+        else:
+            return content + await self.get_next_page(next_page_id)
+
+    async def get_next_page(self, next_page_id: str) -> str:
+        return await self.execute("pagination", "get_next_page", next_page_id)
 
     async def get_all_tables(self) -> list[str]:
         stdout = await self.execute("state_manager", "get_all_tables")
