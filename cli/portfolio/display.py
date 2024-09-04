@@ -107,16 +107,16 @@ def pretty_report(raw_report: str) -> str:
     lines = report.split("\n")
     width = max([len(line) for line in lines]) + 8
     separator = "|" + "-" * width + "|"
-    output += separator
+    output += separator + "\n"
     for line in lines:
         if line == "":
-            output += separator
+            output += separator + "\n"
         elif line[0] != " ":
             output += (
                 "|" + format_text(line, Style.Bold) + " " * (width - len(line)) + "|"
-            )
+            ) + "\n"
         else:
-            output += "|" + line + " " * (width - len(line)) + "|"
+            output += "|" + line + " " * (width - len(line)) + "|" + "\n"
     return output
 
 
