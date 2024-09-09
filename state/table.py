@@ -3,17 +3,10 @@ from __future__ import annotations
 import json
 
 from os import environ
-from base64 import b64encode, b64decode
 from functools import cached_property, cache
 from typing import Literal, Any
 
-from state.relational.serializers import (
-    from_sqlite,
-    ValueType,
-    SQLiteValueType,
-    from_parsed,
-    to_parsed,
-)
+from state.serializers import StateDataType, deserialize
 
 _MAX_COLUMN_WIDTH = (
     int(environ["MAX_COLUMN_WIDTH"]) if "MAX_COLUMN_WIDTH" in environ else 32
@@ -37,26 +30,12 @@ def _display_value(value: Any, width: int) -> str:
 
 
 class Table:
-    @staticmethod
-    def from_parsed(parsed_table: str) -> Table:
-        columns, parsed_rows = json.loads(b64decode(parsed_table))
-        rows = [[from_parsed(value) for value in row] for row in parsed_rows]
-        return Table(columns, rows)
-
-    def __init__(self, columns: list[str], rows: list[list[SQLiteValueType]]) -> None:
+    def __init__(self, columns: list[str], rows: list[list[int | str]]) -> None:
         self._columns = columns
         self._rows = rows
 
     @cached_property
-    def parsed(self) -> str:
-        compact = [
-            self._columns,
-            [[to_parsed(value) for value in row] for row in self._rows],
-        ]
-        return b64encode(json.dumps(compact).encode()).decode()
-
-    @cached_property
-    def _displayed_rows(self) -> list[list[ValueType | None]]:
+    def _displayed_rows(self) -> list[list[StateDataType | None]]:
         if self.row_count <= _MAX_ROW_NUM:
             return [[i] + self.rows[i] for i in range(self.row_count)]
         else:
@@ -120,13 +99,13 @@ class Table:
     def __repr__(self) -> str:
         return self._sep + self._head + self._sep + self._rows_repr + self._sep
 
-    @property
+    @cached_property
     def columns(self) -> list[str]:
         return self._columns.copy()
 
-    @property
-    def rows(self) -> list[list[ValueType | None]]:
-        return [[from_sqlite(value) for value in row] for row in self._rows]
+    @cached_property
+    def rows(self) -> list[list[StateDataType | None]]:
+        return [[deserialize(value) for value in row] for row in self._rows]
 
     @cached_property
     def row_count(self) -> int:
@@ -137,14 +116,14 @@ class Table:
         return len(self.columns)
 
     @cache
-    def get_column(self, column_name: str) -> list[ValueType | None]:
+    def get_column(self, column_name: str) -> list[StateDataType | None]:
         index = self.columns.index(column_name)
         return [row[index] for row in self.rows]
 
     @cache
     def get_rows(
         self, rows: int | tuple[int, int] | Literal["all"] = "all"
-    ) -> list[dict[str, ValueType | None]]:
+    ) -> list[dict[str, StateDataType | None]]:
         if isinstance(rows, int):
             target_rows = self.rows[rows : rows + 1]
         elif isinstance(rows, tuple):

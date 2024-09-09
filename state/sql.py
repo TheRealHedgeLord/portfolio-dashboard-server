@@ -3,12 +3,7 @@ from __future__ import annotations
 from typing import Literal
 from typing_extensions import Self
 
-from state.relational.serializers import (
-    ColumnType,
-    ValueType,
-    COLUMN_TYPE_MAP,
-    to_sqlite,
-)
+from state.serializers import serialize, StateDataType, ColumnType
 
 
 class Query(str):
@@ -17,14 +12,15 @@ class Query(str):
 
     @staticmethod
     def _get_statement(
-        statement: Literal["WHERE", "SET"], key_value_pairs: dict[str, ValueType] | None
+        statement: Literal["WHERE", "SET"],
+        key_value_pairs: dict[str, StateDataType] | None,
     ) -> str:
         return (
             (
                 f" {statement} "
                 + " AND ".join(
                     [
-                        f"{column} = {to_sqlite(key_value_pairs[column])}"
+                        f"{column} = {serialize(key_value_pairs[column])}"
                         for column in key_value_pairs
                     ]
                 )
@@ -36,32 +32,46 @@ class Query(str):
     @staticmethod
     def create_table(table_name: str, column_types: dict[str, ColumnType]) -> Query:
         columns = ", ".join(
-            [
-                f"{column} {COLUMN_TYPE_MAP[column_types[column]]}"
-                for column in column_types
-            ]
+            [f"{column} {column_types[column]}" for column in column_types]
         )
-        query = f"CREATE TABLE {table_name} ({columns}) STRICT"
+        query = f"CREATE TABLE {table_name} ({columns})"
         return Query(query)
 
     @staticmethod
-    def insert_row(table_name: str, column_values: dict[str, ValueType]) -> Query:
+    def insert_row(table_name: str, column_values: dict[str, StateDataType]) -> Query:
         columns = []
         values = []
         for column in column_values:
             columns.append(column)
-            values.append(to_sqlite(column_values[column]))
+            values.append(serialize(column_values[column]))
         return Query(
-            "insert into {} ({}) VALUES ({})".format(
+            "INSERT INTO {} ({}) VALUES ({})".format(
                 table_name, ", ".join(columns), ", ".join(values)
+            )
+        )
+
+    @staticmethod
+    def insert_rows(
+        table_name: str, columns: list[str], rows: list[list[StateDataType]]
+    ) -> Query:
+        return Query(
+            "INSERT INTO {} ({}) VALUES {}".format(
+                table_name,
+                ", ".join(columns),
+                ", ".join(
+                    [
+                        "({})".format(", ".join([serialize(value) for value in row]))
+                        for row in rows
+                    ]
+                ),
             )
         )
 
     @staticmethod
     def update_table(
         table_name: str,
-        match_values: dict[str, ValueType],
-        new_values: dict[str, ValueType],
+        match_values: dict[str, StateDataType],
+        new_values: dict[str, StateDataType],
     ) -> Query:
         set_statement = Query._get_statement("SET", new_values)
         where_statement = Query._get_statement("WHERE", match_values)
@@ -79,7 +89,7 @@ class Query(str):
     def get_table(
         table_name: str,
         columns: list[str] | Literal["*"] = "*",
-        match_values: dict[str, ValueType] | None = None,
+        match_values: dict[str, StateDataType] | None = None,
     ) -> Query:
         column_statement = ", ".join(columns)
         where_statement = Query._get_statement("WHERE", match_values)
@@ -87,7 +97,7 @@ class Query(str):
 
     @staticmethod
     def delete_rows(
-        table_name: str, match_values: dict[str, ValueType] | None = None
+        table_name: str, match_values: dict[str, StateDataType] | None = None
     ) -> Query:
         where_statement = Query._get_statement("WHERE", match_values)
         return Query(f"DELETE FROM {table_name}{where_statement}")
