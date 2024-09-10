@@ -101,3 +101,7 @@ class Query(str):
     ) -> Query:
         where_statement = Query._get_statement("WHERE", match_values)
         return Query(f"DELETE FROM {table_name}{where_statement}")
+
+    @staticmethod
+    def rename_table(table_name: str, new_table_name: str) -> Query:
+        return Query(f"RENAME TABLE {table_name} TO {new_table_name}")
