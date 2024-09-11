@@ -9,10 +9,6 @@ from state.serializers import ColumnType
 from dapps.scroll import Scroll
 
 
-def get_account_hash(address: str) -> bytes:
-    return hashlib.sha256(to_checksum_address(address).encode()).digest()
-
-
 class ScrollMarksTracker:
     table_name = "scroll_marks_tracker"
     table_schema = {
@@ -35,14 +31,18 @@ class ScrollMarksTracker:
             )
 
     async def track_marks(self, user_account: str) -> None:
-        account_hash = get_account_hash(user_account)
+        account_hash = hashlib.sha256(
+            to_checksum_address(user_account).encode()
+        ).digest()
         data = await self.scroll.user_marks_analysis(user_account)
         row = {"timestamp": int(time.time()), "user_account_hash": account_hash}
         row.update(data)
         await self.state.write(Query.insert_row(self.table_name, row))
 
     async def get_table_for_user(self, user_account: str) -> None:
-        account_hash = get_account_hash(user_account)
+        account_hash = hashlib.sha256(
+            to_checksum_address(user_account).encode()
+        ).digest()
         table = await self.state.read(
             Query.get_table(
                 self.table_name,
