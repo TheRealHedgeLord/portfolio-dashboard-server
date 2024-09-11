@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 from typing import Literal
-from typing_extensions import Self
 
 from state.serializers import serialize, StateDataType, ColumnType
 
 
 class Query(str):
-    def __new__(cls, sql: str) -> Self:
+    def __new__(cls, sql: str) -> Query:
         return super().__new__(cls, sql)
 
     @staticmethod
