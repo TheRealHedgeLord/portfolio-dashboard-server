@@ -4,11 +4,14 @@ import asyncio
 
 from modules import MODULES
 from state import RDS
+from cache import Cache
 
 
 async def main(module: str, method: str, args: str) -> dict | list:
     rds = RDS(api_key=os.environ.get("STATE_KEY"))
+    await Cache.read_from_state(rds)
     data = await getattr(MODULES[module](rds), method)(*args)
+    await Cache.save()
     return {"success": True, "data": data}
 
 

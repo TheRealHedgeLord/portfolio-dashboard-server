@@ -19,32 +19,24 @@ from modules.portfolio.trackers.nft_tracker import NFTTracker
 from web2.telegram import TelegramBot
 
 
-TRACKERS = [CoinTracker, CompoundTracker, GMXTracker, NFTTracker]
-
-
-PORTFOLIO_SNAPSHOT_TABLE_SCHEMA = {
-    "table_name": "portfolio_snapshots",
-    "columns_schema": {
+class PortfolioModule:
+    trackers = [CoinTracker, CompoundTracker, GMXTracker, NFTTracker]
+    snapshot_table_name = "portfolio_snapshots"
+    snapshot_table_schema = {
         "timestamp": ColumnType.integer,
         "market_prices": ColumnType.json,
         "total_usd_value": ColumnType.decimal,
         "report": ColumnType.json,
         "platform_exposure": ColumnType.json,
         "sector_exposure": ColumnType.json,
-    },
-}
-
-PORTFOLIO_LOGS_TABLE_SCHEMA = {
-    "table_name": "portfolio_logs",
-    "columns_schema": {
+    }
+    logs_table_name = "portfolio_logs"
+    logs_table_schema = {
         "timestamp": ColumnType.integer,
         "error_id": ColumnType.string,
         "stack_trace": ColumnType.string,
-    },
-}
+    }
 
-
-class PortfolioModule:
     def __init__(self, state: RDS) -> None:
         self.state = state
 
@@ -52,7 +44,7 @@ class PortfolioModule:
         try:
             btc, eth, sol = await asyncio.gather(btc_price(), eth_price(), sol_price())
             market_prices = {"BTC": btc, "ETH": eth, "SOL": sol}
-            trackers = [tracker(self.state, passphrase) for tracker in TRACKERS]
+            trackers = [tracker(self.state, passphrase) for tracker in self.trackers]
             await asyncio.gather(*[tracker.initialize() for tracker in trackers])
             all_modules_snapshots = await asyncio.gather(
                 *[tracker.get_snapshot() for tracker in trackers]
@@ -74,7 +66,7 @@ class PortfolioModule:
             timestamp = int(time.time())
             await self.state.write(
                 Query.insert_row(
-                    PORTFOLIO_SNAPSHOT_TABLE_SCHEMA["table_name"],
+                    self.snapshot_table_name,
                     {
                         "timestamp": timestamp,
                         "market_prices": to_json(market_prices),
@@ -91,7 +83,7 @@ class PortfolioModule:
             error_id = uuid.uuid4().hex
             await self.state.write(
                 Query.insert_row(
-                    PORTFOLIO_LOGS_TABLE_SCHEMA["table_name"],
+                    self.logs_table_name,
                     {
                         "timestamp": timestamp,
                         "error_id": error_id,
@@ -106,12 +98,22 @@ class PortfolioModule:
             )
 
     async def get_snapshot(self, index: str = "-1") -> None:
-        table = await self.state.read(
-            Query.get_table(PORTFOLIO_SNAPSHOT_TABLE_SCHEMA["table_name"])
-        )
+        table = await self.state.read(Query.get_table(self.snapshot_table_name))
         timestamp = table.get_column("timestamp")[int(index)]
         total_usd_value = table.get_column("total_usd_value")[int(index)]
         market_prices = table.get_column("market_prices")[int(index)]
         report = table.get_column("report")[int(index)]
         snapshot = print_snapshot_report(timestamp, total_usd_value, market_prices, report)  # type: ignore
         print(snapshot)
+
+    async def initialize_all_tables(self) -> None:
+        existing_tables = await self.state.get_all_tables()
+        for table_name, table_schema in [
+            (self.snapshot_table_name, self.snapshot_table_schema),
+            (self.logs_table_name, self.logs_table_schema),
+        ] + [
+            (tracker.config_table_name, tracker.config_table_schema)
+            for tracker in self.trackers
+        ]:
+            if table_name not in existing_tables:
+                await self.state.write(Query.create_table(table_name, table_schema))

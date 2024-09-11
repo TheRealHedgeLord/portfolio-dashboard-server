@@ -6,6 +6,21 @@ from web3 import AsyncWeb3
 from eth_typing.evm import ChecksumAddress
 
 from utils import CachedClass
+from cache import Cache
+
+
+def _serialize_cache(value: Any) -> list:
+    if isinstance(value, list) or isinstance(value, tuple):
+        return list(value)
+    else:
+        return [value]
+
+
+def _deserialize_cache(value: Any) -> Any:
+    if isinstance(value, list) and len(value) == 1:
+        return value[0]
+    else:
+        return value
 
 
 class Contract(metaclass=CachedClass):
@@ -16,7 +31,6 @@ class Contract(metaclass=CachedClass):
         self.rpc = rpc
         self.address = address
         self.contract = rpc.eth.contract(address, abi=abi)
-        self._cache = {}
 
     def __repr__(self) -> str:
         return f"<Contract({self.address}) network_id: {self.network_id}>"
@@ -37,13 +51,13 @@ class Contract(metaclass=CachedClass):
             key = self._get_cache_key(method, *args)
             if override:
                 value = await self._view(method, *args)
-                self._cache[key] = value
+                Cache.put(key, _serialize_cache(value))
                 return value
             else:
-                value_from_cache = self._cache.get(key)
+                value_from_cache = Cache.get(key)
                 if value_from_cache == None:
                     value = await self._view(method, *args)
-                    self._cache[key] = value
+                    Cache.put(key, _serialize_cache(value))
                     return value
                 else:
-                    return value_from_cache
+                    return _deserialize_cache(value_from_cache)
