@@ -52,11 +52,10 @@ class PortfolioModule:
         try:
             btc, eth, sol = await asyncio.gather(btc_price(), eth_price(), sol_price())
             market_prices = {"BTC": btc, "ETH": eth, "SOL": sol}
-            await asyncio.gather(
-                *[module(self.state, passphrase).initialize() for module in TRACKERS]
-            )
+            trackers = [tracker(self.state, passphrase) for tracker in TRACKERS]
+            await asyncio.gather(*[tracker.initialize() for tracker in trackers])
             all_modules_snapshots = await asyncio.gather(
-                *[module(self.state, passphrase).get_snapshot() for module in TRACKERS]
+                *[tracker.get_snapshot() for tracker in trackers]
             )
             total_usd_value = Decimal("0")
             report = {}
@@ -88,8 +87,8 @@ class PortfolioModule:
             )
         except:
             timestamp = int(time.time())
-            error_id = uuid.uuid4().hex
             stack_trace = traceback.format_exc()
+            error_id = uuid.uuid4().hex
             await self.state.write(
                 Query.insert_row(
                     PORTFOLIO_LOGS_TABLE_SCHEMA["table_name"],
