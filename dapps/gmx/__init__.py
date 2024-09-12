@@ -7,6 +7,7 @@ from utils import CachedClass
 from dapps.gmx.oracle import GMXOracle
 from evm.constants import ABI, ADDRESSES
 from dapps.gmx.gm import SupportedMarkets, MARKETS
+from dapps.gmx.glv import SupportedGLV, GLV
 
 
 class GMX(metaclass=CachedClass):
@@ -55,6 +56,44 @@ class GMX(metaclass=CachedClass):
         )
         balance = await gm.get_balance(account)
         return await self.get_gm_withdraw_amount_out(balance, market)
+
+    async def get_glv_withdraw_amount_out(
+        self, amount: Decimal, glv: SupportedGLV
+    ) -> tuple[Decimal, Decimal]:
+        contract = self.chain.get_contract(
+            GLV[self.chain.name][glv]["address"], ABI["GLV"]
+        )
+        total_supply = await contract.view("totalSupply")
+        all_markets = GLV[self.chain.name][glv]["gm_markets"]
+        all_balances = await asyncio.gather(
+            *[
+                contract.view(
+                    "tokenBalances", MARKETS[self.chain.name][gm]["market_prop"][0]
+                )
+                for gm in all_markets
+            ]
+        )
+        all_withdraw_amount_out = await asyncio.gather(
+            *[
+                self.get_gm_withdraw_amount_out(
+                    Decimal(all_balances[i]) * amount / Decimal(total_supply),
+                    all_markets[i],
+                )
+                for i in range(len(all_markets))
+            ]
+        )
+        return sum(
+            [long_token_amount for long_token_amount, _ in all_withdraw_amount_out]
+        ), sum(
+            [short_token_amount for _, short_token_amount in all_withdraw_amount_out]
+        )  # type: ignore
+
+    async def get_glv_withdraw_amount_out_for_account(
+        self, account: str, glv: SupportedGLV
+    ) -> tuple[Decimal, Decimal]:
+        glv_token = await self.chain.get_token(GLV[self.chain.name][glv]["address"])
+        balance = await glv_token.get_balance(account)
+        return await self.get_glv_withdraw_amount_out(balance, glv)
 
     async def get_gmx_staking(self, account: str) -> tuple[Decimal, Decimal, Decimal]:
         staked_gmx, reward_gmx, reward_eth = await asyncio.gather(
