@@ -18,6 +18,7 @@ SupportedMarkets = Literal[
     "GM-LTC/USD",
     "GM-STX/USD",
     "GM-ORDI/USD",
+    "GM-wstETH/USDe",
 ]
 
 _BTC_INDEX = "0x47904963fc8b2340414262125aF798B9655E58Cd"
@@ -180,6 +181,16 @@ MARKETS: dict[str, dict[SupportedMarkets, GMMarket]] = {
             ],
             "long_token_decimal": 8,
             "short_token_decimal": 6,
+        },
+        "GM-wstETH/USDe": {
+            "market_prop": [
+                "0x0Cf1fb4d1FF67A3D8Ca92c9d6643F8F9be8e03E5",
+                ADDRESSES["ArbitrumOne"]["WETH"],
+                ADDRESSES["ArbitrumOne"]["wstETH"],
+                ADDRESSES["ArbitrumOne"]["USDe"],
+            ],
+            "long_token_decimal": 18,
+            "short_token_decimal": 18,
         },
     }
 }
