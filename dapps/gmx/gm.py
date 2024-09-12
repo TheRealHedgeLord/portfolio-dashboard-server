@@ -8,7 +8,6 @@ SupportedMarkets = Literal[
     "GM-BTC",
     "GM-tBTC",
     "GM-ETH",
-    "GM-wstETH/USDe",
     "GM-SOL/USD",
     "GM-LINK/USD",
     "GM-NEAR/USD",
