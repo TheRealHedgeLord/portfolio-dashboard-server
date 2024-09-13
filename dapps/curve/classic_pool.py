@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import asyncio
+from decimal import Decimal
 
 from utils import CachedClass, InitializableClass
-from evm import to_checksum_address, EVM
+from evm import EVM
 from evm.token import ERC20
 from evm.constants import ABI
 from dapps.math import ClassicPool
+from exceptions import InvalidValue
 
 
 class CurveClassicPool(InitializableClass, metaclass=CachedClass):
@@ -31,4 +33,19 @@ class CurveClassicPool(InitializableClass, metaclass=CachedClass):
 
     async def get_reserve_data(
         self, base_token: ERC20, quote_token: ERC20
-    ) -> ClassicPool: ...
+    ) -> ClassicPool:
+        reserve_0, reserve_1 = await asyncio.gather(
+            self.contract.view("balances", 0), self.contract.view("balances", 1)
+        )
+        if base_token == self.token_0 and quote_token == self.token_1:
+            return ClassicPool(
+                Decimal(reserve_0) / Decimal(10**self.token_0.decimals),
+                Decimal(reserve_1) / Decimal(10**self.token_1.decimals),
+            )
+        elif base_token == self.token_1 and quote_token == self.token_0:
+            return ClassicPool(
+                Decimal(reserve_1) / Decimal(10**self.token_1.decimals),
+                Decimal(reserve_0) / Decimal(10**self.token_0.decimals),
+            )
+        else:
+            raise InvalidValue("reserve tokens", f"({base_token}, {quote_token})")
