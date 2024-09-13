@@ -10,12 +10,7 @@ from evm import EVM
 from dapps.gmx.gm import SupportedMarkets
 from dapps.gmx.glv import SupportedGLV
 from modules.gmx.optimizer import OptimizedGMX
-from modules.gmx.constants import (
-    SIMULATE_ASSET_AMOUNT,
-    ALL_TRACKED_CHAINS,
-    ALL_TRACKED_GM,
-    ALL_TRACKED_GLV,
-)
+from modules.gmx.constants import ALL_TRACKED_CHAINS, ALL_TRACKED_GM, ALL_TRACKED_GLV
 
 
 class GMXPerformanceTracker:
@@ -89,3 +84,11 @@ class GMXPerformanceTracker:
                 for glv in ALL_TRACKED_GLV[chain]
             ]
         await asyncio.gather(*glv_tasks)
+
+    async def get_asset_performance(self, chain: str, asset: str) -> None:
+        table = await self.state.read(
+            Query.get_table(
+                self.table_name, match_values={"chain": chain, "asset": asset}
+            )
+        )
+        print(table)

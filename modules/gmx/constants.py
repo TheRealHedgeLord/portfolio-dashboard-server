@@ -4,8 +4,6 @@ from dapps.gmx.gm import SupportedMarkets
 from dapps.gmx.glv import SupportedGLV
 
 
-SIMULATE_ASSET_AMOUNT = Decimal("1000")
-
 ALL_TRACKED_CHAINS = ["ArbitrumOne"]
 
 ALL_TRACKED_GM: dict[str, list[SupportedMarkets]] = {
