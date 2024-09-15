@@ -16,11 +16,12 @@ from modules.portfolio.trackers.coin_tracker import CoinTracker
 from modules.portfolio.trackers.compound_tracker import CompoundTracker
 from modules.portfolio.trackers.gmx_tracker import GMXTracker
 from modules.portfolio.trackers.nft_tracker import NFTTracker
+from modules.portfolio.trackers.conic_tracker import ConicTracker
 from web2.telegram import TelegramBot
 
 
 class PortfolioModule:
-    trackers = [CoinTracker, CompoundTracker, GMXTracker, NFTTracker]
+    trackers = [CoinTracker, CompoundTracker, GMXTracker, NFTTracker, ConicTracker]
     snapshot_table_name = "portfolio_snapshots"
     snapshot_table_schema = {
         "timestamp": ColumnType.integer,
@@ -42,6 +43,7 @@ class PortfolioModule:
 
     async def take_snapshot(self, passphrase: str) -> None:
         try:
+            timestamp = int(time.time())
             btc, eth, sol = await asyncio.gather(btc_price(), eth_price(), sol_price())
             market_prices = {"BTC": btc, "ETH": eth, "SOL": sol}
             trackers = [tracker(self.state, passphrase) for tracker in self.trackers]
@@ -63,7 +65,6 @@ class PortfolioModule:
                 report.update(module_report)
                 dict_add(platform_exposure, module_platform_exposure)
                 dict_add(sector_exposure, module_sector_exposure)
-            timestamp = int(time.time())
             await self.state.write(
                 Query.insert_row(
                     self.snapshot_table_name,

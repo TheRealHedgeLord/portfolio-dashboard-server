@@ -2,12 +2,22 @@ import os
 import asyncio
 
 from decimal import Decimal
+from typing import TypedDict
 
 from evm import EVM
 from evm.constants import ADDRESSES, ABI
 from dapps.curve import CurveClassicPool
 from dapps.math import ClassicPool
 from web2.coingecko import CoinGecko
+
+
+class BestExit(TypedDict):
+    cncdt_balance: Decimal
+    swap_amount: Decimal
+    redeem_amount: Decimal
+    crvusd_amount_out: Decimal
+    redeemed_tokens: dict[str, dict[str, Decimal]]
+    total_usd_value: Decimal
 
 
 class ConicDebtPool:
@@ -48,7 +58,7 @@ class ConicDebtPool:
         )
         return await curve_pool.get_reserve_data(cncDT, crvUSD)
 
-    async def get_best_exit(self, account: str) -> dict:
+    async def get_best_exit(self, account: str) -> BestExit:
         cncDT = await self.ethereum.get_token(ADDRESSES[self.ethereum.name]["cncDT"])
         balance = await cncDT.get_balance(account)
         (crv, cvx, cnc), (crv_price, cvx_price, cnc_price), curve_pool_data = (
@@ -58,7 +68,6 @@ class ConicDebtPool:
                 self.get_curve_pool_data(),
             )
         )
-        print(crv, cvx, cnc)
         market_price = curve_pool_data.market_price
         redemption_price = (
             crv * crv_price + cvx * cvx_price + cnc * cnc_price
