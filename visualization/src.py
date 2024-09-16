@@ -8,7 +8,8 @@ GOOGLE_CHART_HTML = """<html>
         var data = google.visualization.arrayToDataTable(\u1234data\u4321);
         var options = {
           title: '\u1234title\u4321',
-          hAxis: {textPosition: 'none'}
+          hAxis: {textPosition: 'none'},
+          \u1234options\u4321
         };
         var chart = new google.visualization.\u1234chart_type\u4321(document.getElementById('chart'));
         chart.draw(data, options);

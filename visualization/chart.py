@@ -1,10 +1,12 @@
 import os
+import json
 import webbrowser
 
 from typing import Literal
 
 from visualization.src import GOOGLE_CHART_HTML
 from visualization.htmlutils import insert
+from utils import snake_to_camel
 
 
 DEFAULT_CACHE_DIR = os.environ.get("DEFAULT_CACHE_DIR")
@@ -17,6 +19,7 @@ class Chart:
         title: str,
         data: list[list],
         height: str = "500",
+        options: dict = {},
         cache_root: str | None = DEFAULT_CACHE_DIR,
     ):
         self.chart_type = chart_type
@@ -24,6 +27,9 @@ class Chart:
         self.data = data
         self.height = height
         self.cache_root = cache_root if cache_root else "./"
+        self.options = ", ".join(
+            [f"{snake_to_camel(key)}: {json.dumps(options[key])}" for key in options]
+        )
 
     @property
     def html(self) -> str:
@@ -33,6 +39,7 @@ class Chart:
             title=self.title,
             chart_type=self.chart_type,
             height=self.height,
+            options=self.options,
         )
 
     @property

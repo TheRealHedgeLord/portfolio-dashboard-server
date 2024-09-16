@@ -6,6 +6,7 @@ from abc import abstractmethod
 from asyncio import Event
 from decimal import Decimal
 from typing import Callable, Any
+from string import ascii_lowercase
 
 from exceptions import NotInitializedError
 
@@ -112,3 +113,10 @@ def get_json_dictionary(path: str) -> dict:
         with open(f"{path}{file}", mode="r") as f:
             data[file.replace(".json", "")] = json.load(f)
     return data
+
+
+def snake_to_camel(string: str) -> str:
+    _string = string
+    for char in ascii_lowercase:
+        _string = _string.replace(f"_{char}", char.upper())
+    return _string
