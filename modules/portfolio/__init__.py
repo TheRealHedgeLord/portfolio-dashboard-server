@@ -19,12 +19,20 @@ from modules.portfolio.trackers.compound_tracker import CompoundTracker
 from modules.portfolio.trackers.gmx_tracker import GMXTracker
 from modules.portfolio.trackers.nft_tracker import NFTTracker
 from modules.portfolio.trackers.conic_tracker import ConicTracker
+from modules.portfolio.trackers.sky_tracker import SkyTracker
 from web2.telegram import TelegramBot
 from visualization import Canvas
 
 
 class PortfolioModule:
-    trackers = [CoinTracker, CompoundTracker, GMXTracker, NFTTracker, ConicTracker]
+    trackers = [
+        CoinTracker,
+        CompoundTracker,
+        GMXTracker,
+        NFTTracker,
+        ConicTracker,
+        SkyTracker,
+    ]
     snapshot_table_name = "portfolio_snapshots"
     snapshot_table_schema = {
         "timestamp": ColumnType.integer,
