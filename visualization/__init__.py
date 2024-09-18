@@ -1,1 +1,1 @@
-from visualization.chart import Chart
+from visualization.canvas import Canvas

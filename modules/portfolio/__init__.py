@@ -20,7 +20,7 @@ from modules.portfolio.trackers.gmx_tracker import GMXTracker
 from modules.portfolio.trackers.nft_tracker import NFTTracker
 from modules.portfolio.trackers.conic_tracker import ConicTracker
 from web2.telegram import TelegramBot
-from visualization import Chart
+from visualization import Canvas
 
 
 class PortfolioModule:
@@ -122,84 +122,77 @@ class PortfolioModule:
             if table_name not in existing_tables:
                 await self.state.write(Query.create_table(table_name, table_schema))
 
-    async def plot_portfolio_value(self) -> None:
+    async def visualize_portfolio(self) -> None:
         table = await self.state.read(Query.get_table(self.snapshot_table_name))
         timestamp: list[int] = table.get_column("timestamp")  # type: ignore
         total_usd_value: list[Decimal] = table.get_column("total_usd_value")  # type: ignore
-        data = [["timestamp", "USD Value"]] + [
+        platform_exposure: list[dict[str, float]] = table.get_column("platform_exposure")  # type: ignore
+        sector_exposure: list[dict[str, float]] = table.get_column("sector_exposure")  # type: ignore
+        usd_value_data = [["timestamp", "USD Value"]] + [
             [
                 datetime.fromtimestamp(timestamp[i]).strftime("%Y-%m-%d %H:%M"),
                 float(total_usd_value[i]),
             ]
             for i in range(table.row_count)
         ]
-        chart = Chart("AreaChart", "Portfolio USD Value", data)
-        chart.draw()
-
-    async def plot_sector_exposure(
-        self, chart_type: Literal["pie", "area"] = "pie"
-    ) -> None:
-        table = await self.state.read(Query.get_table(self.snapshot_table_name))
-        sector_exposure: list[dict[str, float]] = table.get_column("sector_exposure")  # type: ignore
-        if chart_type == "area":
-            timestamp: list[int] = table.get_column("timestamp")  # type: ignore
-            total_usd_value: list[Decimal] = table.get_column("total_usd_value")  # type: ignore
-            heads = []
-            for row in sector_exposure:
-                for key in row:
-                    if key not in heads:
-                        heads.append(key)
-            data = [["timestamp"] + heads] + [
-                [datetime.fromtimestamp(timestamp[i]).strftime("%Y-%m-%d %H:%M")]
-                + [
-                    (
-                        0
-                        if key not in sector_exposure[i]
-                        else sector_exposure[i][key] / float(total_usd_value[i])
-                    )
-                    for key in heads
-                ]
-                for i in range(table.row_count)
+        sector_heads = []
+        for row in sector_exposure:
+            for key in row:
+                if key not in sector_heads:
+                    sector_heads.append(key)
+        sector_area_data = [["timestamp"] + sector_heads] + [
+            [datetime.fromtimestamp(timestamp[i]).strftime("%Y-%m-%d %H:%M")]
+            + [
+                (
+                    0
+                    if key not in sector_exposure[i]
+                    else sector_exposure[i][key] / float(total_usd_value[i])
+                )
+                for key in sector_heads
             ]
-            chart = Chart(
-                "AreaChart", "Sector Exposure", data, options={"is_stacked": True}
-            )
-        else:
-            latest = sector_exposure[-1]
-            data = [["Sector", "Exposure"], *[[key, latest[key]] for key in latest]]
-            chart = Chart("PieChart", "Sector Exposure", data)
-        chart.draw()
-
-    async def plot_platform_exposure(
-        self, chart_type: Literal["pie", "area"] = "pie"
-    ) -> None:
-        table = await self.state.read(Query.get_table(self.snapshot_table_name))
-        platform_exposure: list[dict[str, float]] = table.get_column("platform_exposure")  # type: ignore
-        if chart_type == "area":
-            timestamp: list[int] = table.get_column("timestamp")  # type: ignore
-            total_usd_value: list[Decimal] = table.get_column("total_usd_value")  # type: ignore
-            heads = []
-            for row in platform_exposure:
-                for key in row:
-                    if key not in heads:
-                        heads.append(key)
-            data = [["timestamp"] + heads] + [
-                [datetime.fromtimestamp(timestamp[i]).strftime("%Y-%m-%d %H:%M")]
-                + [
-                    (
-                        0
-                        if key not in platform_exposure[i]
-                        else platform_exposure[i][key] / float(total_usd_value[i])
-                    )
-                    for key in heads
-                ]
-                for i in range(table.row_count)
+            for i in range(table.row_count)
+        ]
+        sector_latest = sector_exposure[-1]
+        sector_pie_data = [
+            ["Sector", "Exposure"],
+            *[[key, sector_latest[key]] for key in sector_latest],
+        ]
+        platform_heads = []
+        for row in platform_exposure:
+            for key in row:
+                if key not in platform_heads:
+                    platform_heads.append(key)
+        platform_area_data = [["timestamp"] + platform_heads] + [
+            [datetime.fromtimestamp(timestamp[i]).strftime("%Y-%m-%d %H:%M")]
+            + [
+                (
+                    0
+                    if key not in platform_exposure[i]
+                    else platform_exposure[i][key] / float(total_usd_value[i])
+                )
+                for key in platform_heads
             ]
-            chart = Chart(
-                "AreaChart", "Sector Exposure", data, options={"is_stacked": True}
-            )
-        else:
-            latest = platform_exposure[-1]
-            data = [["Platform", "Exposure"], *[[key, latest[key]] for key in latest]]
-            chart = Chart("PieChart", "Platform Exposure", data)
-        chart.draw()
+            for i in range(table.row_count)
+        ]
+        platform_latest = platform_exposure[-1]
+        platform_pie_data = [
+            ["Platform", "Exposure"],
+            *[[key, platform_latest[key]] for key in platform_latest],
+        ]
+        canvas = Canvas()
+        canvas.add_chart("AreaChart", "Portfolio Value", usd_value_data)
+        canvas.add_chart("PieChart", "Sector Exposure", sector_pie_data)
+        canvas.add_chart("PieChart", "Platform Exposure", platform_pie_data)
+        canvas.add_chart(
+            "AreaChart",
+            "Sector Exposure Over Time",
+            sector_area_data,
+            options={"is_stacked": True},
+        )
+        canvas.add_chart(
+            "AreaChart",
+            "Platform Exposure Over Time",
+            platform_area_data,
+            options={"is_stacked": True},
+        )
+        canvas.draw()

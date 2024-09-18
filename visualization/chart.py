@@ -1,10 +1,11 @@
 import os
 import json
+import uuid
 import webbrowser
 
 from typing import Literal
 
-from visualization.src import GOOGLE_CHART_HTML
+from visualization.src import GOOGLE_CHART_HTML, CHART_FUNCTION_SRC, CHART_DIV_SRC
 from visualization.htmlutils import insert
 from utils import snake_to_camel
 
@@ -20,33 +21,27 @@ class Chart:
         data: list[list],
         height: str = "500",
         options: dict = {},
-        cache_root: str | None = DEFAULT_CACHE_DIR,
-    ):
+    ) -> None:
+        self.chart_id = uuid.uuid4().hex
         self.chart_type = chart_type
         self.title = title
-        self.data = data
+        self.data = json.dumps(data)
         self.height = height
-        self.cache_root = cache_root if cache_root else "./"
         self.options = ", ".join(
             [f"{snake_to_camel(key)}: {json.dumps(options[key])}" for key in options]
         )
 
     @property
-    def html(self) -> str:
+    def chart_function(self) -> str:
         return insert(
-            GOOGLE_CHART_HTML,
+            CHART_FUNCTION_SRC,
+            chart_id=self.chart_id,
             data=self.data,
             title=self.title,
             chart_type=self.chart_type,
-            height=self.height,
             options=self.options,
         )
 
     @property
-    def cache_file_path(self) -> str:
-        return f"{self.cache_root}cache.html"
-
-    def draw(self) -> None:
-        with open(self.cache_file_path, mode="w") as f:
-            f.write(self.html)
-        webbrowser.open(f"file://{os.path.realpath(self.cache_file_path)}")
+    def chart_div(self) -> str:
+        return insert(CHART_DIV_SRC, chart_id=self.chart_id, height=self.height)
