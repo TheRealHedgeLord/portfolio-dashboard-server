@@ -127,7 +127,12 @@ def print_snapshot_report(
     raw_report += f"Total USD Value: ${round(total_usd_value, 2)}\n\n"
     raw_report += (
         f"Market Prices:\n"
-        + "\n".join([f"\t{key}: ${market_prices[key]}" for key in market_prices])
+        + "\n".join(
+            [
+                f"\t{key}: ${market_prices[key][0]} (MC ${display_decimal(Decimal(market_prices[key][1]))})"
+                for key in market_prices
+            ]
+        )
         + "\n\n"
     )
     for module in report:

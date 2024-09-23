@@ -20,6 +20,7 @@ from modules.portfolio.trackers.gmx_tracker import GMXTracker
 from modules.portfolio.trackers.nft_tracker import NFTTracker
 from modules.portfolio.trackers.conic_tracker import ConicTracker
 from modules.portfolio.trackers.sky_tracker import SkyTracker
+from web2.coingecko import CoinGecko
 from web2.telegram import TelegramBot
 from visualization import Canvas
 
@@ -55,7 +56,10 @@ class PortfolioModule:
     async def take_snapshot(self, passphrase: str) -> None:
         try:
             timestamp = int(time.time())
-            btc, eth, sol = await asyncio.gather(btc_price(), eth_price(), sol_price())
+            coingecko = CoinGecko(os.environ["COINGECKO_API_KEY"])
+            btc, eth, sol = await coingecko.get_token_data(
+                "bitcoin", "ethereum", "solana"
+            )
             market_prices = {"BTC": btc, "ETH": eth, "SOL": sol}
             trackers = [tracker(self.state, passphrase) for tracker in self.trackers]
             await asyncio.gather(*[tracker.initialize() for tracker in trackers])

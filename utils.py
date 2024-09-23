@@ -34,7 +34,7 @@ def dict_add(
 def to_json(obj: Any) -> Any:
     if isinstance(obj, dict):
         return {str(key): to_json(obj[key]) for key in obj}
-    elif isinstance(obj, list):
+    elif isinstance(obj, list) or isinstance(obj, tuple):
         return [to_json(value) for value in obj]
     elif isinstance(obj, Decimal):
         return float(obj)
