@@ -25,6 +25,7 @@ from svm import SVM
 from evm import EVM
 from bitcoin import Bitcoin
 from exceptions import NotExistError
+from web2.cex import get_cex
 
 
 class Coin:
@@ -77,7 +78,10 @@ class Coin:
         self, platform: str, asset_id: str, account: str | dict
     ) -> Decimal:
         if isinstance(account, dict):
-            ...
+            exchange = account["exchange"]
+            auth = account["auth"]
+            cex = get_cex(exchange, auth)
+            balance = await cex.get_token_balance(asset_id)
         elif platform == "Bitcoin":
             bitcoin = Bitcoin()
             if asset_id == "native":
@@ -123,6 +127,11 @@ class Coin:
             return Decimal("1")
         elif self.price_reference == "CoinGecko":
             return await coingecko_price(self.price_reference_config["token_id"])
+        elif self.price_reference == "CEX":
+            exchange = self.price_reference_config["exchange"]
+            ticker = self.price_reference_config["ticker"]
+            cex = get_cex(exchange, {})
+            return await cex.last_traded_price(ticker)
         else:
             raise NotExistError("price_reference", self.price_reference)
 

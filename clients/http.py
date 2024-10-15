@@ -3,7 +3,7 @@ import json
 import asyncio
 import uuid
 
-from typing import Dict, Any, Literal
+from typing import Any, Literal
 from urllib.parse import urlencode
 from asyncio import Queue
 
@@ -23,9 +23,9 @@ class HTTPClient:
         self,
         method: Literal["get", "post"],
         endpoint: str = "",
-        parameters: Dict[str, Any] = {},
+        parameters: dict[str, Any] = {},
         data: str = "",
-        headers: Dict[str, str] = {},
+        headers: dict[str, str] = {},
         timeout: int = 15,
     ) -> Any:
         await self.__queue.get()
@@ -44,9 +44,9 @@ class HTTPClient:
         self,
         method: Literal["get", "post"],
         endpoint: str,
-        parameters: Dict[str, Any],
+        parameters: dict[str, Any],
         data: str,
-        headers: Dict[str, str],
+        headers: dict[str, str],
         timeout: int,
     ) -> Any:
         url = (
