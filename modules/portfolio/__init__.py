@@ -113,12 +113,16 @@ class PortfolioModule:
                 f"Error happend when taking snapshot, id: {error_id}",
             )
 
-    async def get_snapshot(self, index: str = "-1") -> None:
-        table = await self.state.read(Query.get_table(self.snapshot_table_name))
-        timestamp = table.get_column("timestamp")[int(index)]
-        total_usd_value = table.get_column("total_usd_value")[int(index)]
-        market_prices = table.get_column("market_prices")[int(index)]
-        report = table.get_column("report")[int(index)]
+    async def get_snapshot(self) -> None:
+        table = await self.state.read(
+            Query(
+                f"SELECT * FROM {self.snapshot_table_name} ORDER BY timestamp DESC LIMIT 1"
+            )
+        )
+        timestamp = table.get_column("timestamp")[0]
+        total_usd_value = table.get_column("total_usd_value")[0]
+        market_prices = table.get_column("market_prices")[0]
+        report = table.get_column("report")[0]
         snapshot = print_snapshot_report(timestamp, total_usd_value, market_prices, report)  # type: ignore
         print(snapshot)
 
@@ -135,7 +139,17 @@ class PortfolioModule:
                 await self.state.write(Query.create_table(table_name, table_schema))
 
     async def visualize_portfolio(self) -> None:
-        table = await self.state.read(Query.get_table(self.snapshot_table_name))
+        table = await self.state.read(
+            Query.get_table(
+                self.snapshot_table_name,
+                columns=[
+                    "timestamp",
+                    "total_usd_value",
+                    "platform_exposure",
+                    "sector_exposure",
+                ],
+            )
+        )
         timestamp: list[int] = table.get_column("timestamp")  # type: ignore
         total_usd_value: list[Decimal] = table.get_column("total_usd_value")  # type: ignore
         platform_exposure: list[dict[str, float]] = table.get_column("platform_exposure")  # type: ignore
@@ -167,7 +181,12 @@ class PortfolioModule:
         sector_latest = sector_exposure[-1]
         sector_pie_data = [
             ["Sector", "Exposure"],
-            *[[key, sector_latest[key]] for key in sector_latest],
+            *[
+                [key, sector_latest[key]]
+                for key in sorted(
+                    sector_latest, key=lambda x: sector_latest[x], reverse=True
+                )
+            ],
         ]
         platform_heads = []
         for row in platform_exposure:
@@ -189,7 +208,12 @@ class PortfolioModule:
         platform_latest = platform_exposure[-1]
         platform_pie_data = [
             ["Platform", "Exposure"],
-            *[[key, platform_latest[key]] for key in platform_latest],
+            *[
+                [key, platform_latest[key]]
+                for key in sorted(
+                    platform_latest, key=lambda x: platform_latest[x], reverse=True
+                )
+            ],
         ]
         canvas = Canvas()
         canvas.add_chart("AreaChart", "Portfolio Value", usd_value_data)

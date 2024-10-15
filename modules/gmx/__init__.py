@@ -1,3 +1,4 @@
+import os
 import time
 import asyncio
 
@@ -11,6 +12,7 @@ from dapps.gmx.gm import SupportedMarkets
 from dapps.gmx.glv import SupportedGLV
 from modules.gmx.optimizer import OptimizedGMX
 from modules.gmx.constants import ALL_TRACKED_CHAINS, ALL_TRACKED_GM, ALL_TRACKED_GLV
+from web2.coingecko import CoinGecko
 
 
 class GMXPerformanceTracker:
@@ -26,6 +28,7 @@ class GMXPerformanceTracker:
 
     def __init__(self, state: RDS) -> None:
         self.state = state
+        self.coingecko = CoinGecko(os.environ["COINGECKO_API_KEY"])
 
     async def initialize_table(self) -> None:
         all_tables = await self.state.get_all_tables()
@@ -70,6 +73,21 @@ class GMXPerformanceTracker:
 
     async def track_performance(self, asset_amount: str) -> None:
         timestamp = int(time.time())
+        (btc, _), (eth, _), (sol, _), (link, _) = await self.coingecko.get_token_data(
+            "bitcoin", "ethereum", "solana", "chainlink"
+        )
+        await self.state.write(
+            Query.insert_rows(
+                self.table_name,
+                [key for key in self.table_schema],
+                [
+                    [timestamp, "N/A", "BTC", Decimal(1), Decimal(0), btc],
+                    [timestamp, "N/A", "ETH", Decimal(1), Decimal(0), eth],
+                    [timestamp, "N/A", "SOL", Decimal(1), Decimal(0), sol],
+                    [timestamp, "N/A", "LINK", Decimal(1), Decimal(0), link],
+                ],
+            )
+        )
         gm_tasks = []
         for chain in ALL_TRACKED_CHAINS:
             gm_tasks += [
