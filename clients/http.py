@@ -54,7 +54,6 @@ class HTTPClient:
             + endpoint
             + (f"?{urlencode(parameters)}" if parameters else "")
         )
-        print(url)
         async with httpx.AsyncClient(timeout=timeout) as client:
             kwargs = {}
             if data:
