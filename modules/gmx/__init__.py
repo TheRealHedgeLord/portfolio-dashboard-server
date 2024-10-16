@@ -3,6 +3,7 @@ import time
 import asyncio
 
 from decimal import Decimal
+from datetime import datetime
 
 from state import RDS
 from state.sql import Query
@@ -13,6 +14,7 @@ from dapps.gmx.glv import SupportedGLV
 from modules.gmx.optimizer import OptimizedGMX
 from modules.gmx.constants import ALL_TRACKED_CHAINS, ALL_TRACKED_GM, ALL_TRACKED_GLV
 from web2.coingecko import CoinGecko
+from visualization import Canvas
 
 
 class GMXPerformanceTracker:
@@ -110,3 +112,58 @@ class GMXPerformanceTracker:
             )
         )
         print(table)
+
+    async def plot_single_exposure_asset(self, chain: str, asset: str) -> None:
+        table = await self.state.read(
+            Query.get_table(
+                self.table_name,
+                columns=[
+                    "timestamp",
+                    "asset_amount",
+                    "long_token_withdraw_amount",
+                    "short_token_withdraw_amount",
+                ],
+                match_values={"chain": chain, "asset": asset},
+            )
+        )
+        timestamp: list[int] = table.get_column("timestamp")  # type: ignore
+        asset_amount: list[Decimal] = table.get_column("asset_amount")  # type: ignore
+        long_token_withdraw_amount: list[Decimal] = table.get_column(
+            "long_token_withdraw_amount"
+        )  # type: ignore
+        short_token_withdraw_amount: list[Decimal] = table.get_column(
+            "short_token_withdraw_amount"
+        )  # type: ignore
+        first = (
+            long_token_withdraw_amount[0] + short_token_withdraw_amount[0]
+        ) / asset_amount[0]
+        last = (
+            long_token_withdraw_amount[-1] + short_token_withdraw_amount[-1]
+        ) / asset_amount[-1]
+        print(last, first)
+        apy = round(
+            float((last - first) / first)
+            * (365 * 24 * 60 * 60 / (timestamp[-1] - timestamp[0]))
+            * 100,
+            2,
+        )
+        days = int((timestamp[-1] - timestamp[0]) / (24 * 60 * 60))
+        underlying = asset.split("-")[-1]
+        data = [
+            ["timestamp", f"{underlying} / {asset}"],
+            *[
+                [
+                    datetime.fromtimestamp(timestamp[i]).strftime("%Y-%m-%d %H:%M"),
+                    float(
+                        (long_token_withdraw_amount[i] + short_token_withdraw_amount[i])
+                        / asset_amount[i]
+                    ),
+                ]
+                for i in range(table.row_count)
+            ],
+        ]
+        canvas = Canvas()
+        canvas.add_chart(
+            "AreaChart", f"{asset} porformance ({days} days prorated APY {apy}%)", data
+        )
+        canvas.draw()

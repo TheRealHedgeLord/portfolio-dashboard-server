@@ -1,5 +1,6 @@
 import os
 import json
+import traceback
 import asyncio
 
 from modules import MODULES
@@ -24,5 +25,9 @@ def lambda_handler(event, _):
         response = asyncio.run(main(module, method, args))
     except Exception as error:
         status_code = 500
-        response = {"success": False, "error": str(error)}
+        response = {
+            "success": False,
+            "error": str(error),
+            "traceback": traceback.format_exc(),
+        }
     return {"statusCode": status_code, "body": json.dumps(response)}

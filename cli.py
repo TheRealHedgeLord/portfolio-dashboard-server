@@ -1,4 +1,5 @@
 import sys
+import json
 
 from dotenv import load_dotenv
 
@@ -15,4 +16,5 @@ if __name__ == "__main__":
         event = {"module": argv[1], "method": argv[2], "args": list(argv[3::])}
         response = lambda_handler(event, None)
         if response["statusCode"] != 200:
-            raise Exception(str(response))
+            body = json.loads(response["body"])
+            print(body["traceback"])
