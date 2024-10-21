@@ -20,6 +20,9 @@ from modules.portfolio.trackers.gmx_tracker import GMXTracker
 from modules.portfolio.trackers.nft_tracker import NFTTracker
 from modules.portfolio.trackers.conic_tracker import ConicTracker
 from modules.portfolio.trackers.sky_tracker import SkyTracker
+from modules.portfolio.trackers.benddao_ape_staking_tracker import (
+    BendDaoApeStakingTracker,
+)
 from web2.coingecko import CoinGecko
 from web2.telegram import TelegramBot
 from visualization import Canvas
@@ -33,6 +36,7 @@ class PortfolioModule:
         NFTTracker,
         ConicTracker,
         SkyTracker,
+        BendDaoApeStakingTracker,
     ]
     snapshot_table_name = "portfolio_snapshots"
     snapshot_table_schema = {
