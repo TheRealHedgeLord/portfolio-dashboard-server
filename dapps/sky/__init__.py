@@ -5,7 +5,7 @@ from decimal import Decimal
 from evm import EVM
 from evm.constants import ADDRESSES, ABI
 from web2.coingecko import CoinGecko
-from sky.susds import SUSDS
+from dapps.sky.susds import SUSDS
 
 
 SKY_PER_MKR = 24000
