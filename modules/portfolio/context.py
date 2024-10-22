@@ -7,12 +7,14 @@ from web2.coingecko import CoinGecko
 from dapps.lido import Lido
 from dapps.jito import Jito
 from dapps.makerdao import MakerDAO
+from dapps.sky import SUSDS
 
 
 _coingecko_client = CoinGecko(environ["COINGECKO_API_KEY"])
 _lido = Lido()
 _jito = Jito()
 _maker = MakerDAO()
+_susds = SUSDS()
 
 
 @GlobalContext.with_context
@@ -52,3 +54,8 @@ async def jitosol() -> Decimal:
 @GlobalContext.with_context
 async def sdai() -> Decimal:
     return await _maker.dai_per_sdai()
+
+
+@GlobalContext.with_context
+async def susds() -> Decimal:
+    return await _susds.usds_per_susds()

@@ -12,6 +12,7 @@ from modules.portfolio.context import (
     wsteth,
     jitosol,
     sdai,
+    susds,
 )
 from modules.portfolio.display import (
     display_btc_asset,
@@ -112,6 +113,9 @@ class Coin:
         elif self.price_reference == "sDAI":
             multiplier = await sdai()
             return balance * multiplier
+        elif self.price_reference == "sUSDS":
+            multiplier = await susds()
+            return balance * multiplier
         else:
             return balance
 
@@ -123,7 +127,7 @@ class Coin:
             return await eth_price()
         elif self.price_reference in ["SOL", "jitoSOL"]:
             return await sol_price()
-        elif self.price_reference in ["USD", "sDAI"]:
+        elif self.price_reference in ["USD", "sDAI", "sUSDS"]:
             return Decimal("1")
         elif self.price_reference == "CoinGecko":
             return await coingecko_price(self.price_reference_config["token_id"])
