@@ -57,13 +57,23 @@ class GMXTracker(BaseTracker):
             market_spec["short_token"]["sector"],
             short_token_usd_value,
         )
-        self._report["GMX"].append(
-            [
-                f"{market} ({gmx_app.chain.name})",
-                await long_token.display_balance(adjusted_long_token_amount),
-                await short_token.display_balance(adjusted_short_token_amount),
-            ]
-        )
+        if long_token == short_token:
+            self._report["GMX"].append(
+                [
+                    f"{market} ({gmx_app.chain.name})",
+                    await long_token.display_balance(
+                        adjusted_long_token_amount + adjusted_short_token_amount
+                    ),
+                ]
+            )
+        else:
+            self._report["GMX"].append(
+                [
+                    f"{market} ({gmx_app.chain.name})",
+                    await long_token.display_balance(adjusted_long_token_amount),
+                    await short_token.display_balance(adjusted_short_token_amount),
+                ]
+            )
 
     async def _process_row(self, row: dict) -> None:
         account: str = self.cipher.decrypt(row["account"])  # type: ignore
