@@ -89,10 +89,15 @@ class Query(str):
         table_name: str,
         columns: list[str] | Literal["*"] = "*",
         match_values: dict[str, StateDataType] | None = None,
+        order_by: str | None = None,
+        order: Literal["ASC", "DESC"] = "ASC",
     ) -> Query:
         column_statement = ", ".join(columns)
         where_statement = Query._get_statement("WHERE", match_values)
-        return Query(f"SELECT {column_statement} FROM {table_name}{where_statement}")
+        order_by_statement = f" ORDER BY {order_by} {order}" if order_by else ""
+        return Query(
+            f"SELECT {column_statement} FROM {table_name}{where_statement}{order_by_statement}"
+        )
 
     @staticmethod
     def delete_rows(

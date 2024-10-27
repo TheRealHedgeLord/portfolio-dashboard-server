@@ -5,6 +5,7 @@ import hashlib
 from decimal import Decimal
 from urllib.parse import urlencode
 
+from web2.cex.types import Candle
 from clients.http import HTTPClient
 from utils import CachedClass
 
@@ -52,3 +53,28 @@ class Binance(HTTPClient, metaclass=CachedClass):
             "get", endpoint="/api/v3/ticker/price", parameters={"symbol": ticker}
         )
         return Decimal(data["price"])
+
+    async def get_candle_chart(
+        self, ticker: str, interval: str, start_time: int, end_time: int
+    ) -> list[Candle]:
+        data = await self._call(
+            "get",
+            endpoint="/api/v3/klines",
+            parameters={
+                "symbol": ticker,
+                "interval": interval,
+                "startTime": start_time,
+                "endTime": end_time,
+            },
+        )
+        return [
+            {
+                "timestamp": int(candle[0]),
+                "open": Decimal(candle[1]),
+                "high": Decimal(candle[2]),
+                "low": Decimal(candle[3]),
+                "close": Decimal(candle[4]),
+                "volume": Decimal(candle[5]),
+            }
+            for candle in data
+        ]

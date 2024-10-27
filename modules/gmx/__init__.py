@@ -108,7 +108,9 @@ class GMXPerformanceTracker:
     async def get_asset_performance(self, chain: str, asset: str) -> None:
         table = await self.state.read(
             Query.get_table(
-                self.table_name, match_values={"chain": chain, "asset": asset}
+                self.table_name,
+                match_values={"chain": chain, "asset": asset},
+                order_by="timestamp",
             )
         )
         print(table)
@@ -124,6 +126,7 @@ class GMXPerformanceTracker:
                     "short_token_withdraw_amount",
                 ],
                 match_values={"chain": chain, "asset": asset},
+                order_by="timestamp",
             )
         )
         timestamp: list[int] = table.get_column("timestamp")  # type: ignore
