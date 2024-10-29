@@ -114,5 +114,7 @@ def deserialize(value: int | str) -> StateDataType:
             return deserialize_json(content)
         elif type_code == BlobTypeCode.bytes:
             return content
+        elif value == "MA==":
+            return b""
         else:
             raise SerializationError(value)
