@@ -48,6 +48,10 @@ class PendleMarket(InitializableClass, metaclass=CachedClass):
         ln_implied_rate = state[-1] / 10**18
         return Decimal(math.exp(ln_implied_rate) - 1)
 
+    async def get_implied_apy(self) -> str:
+        implied_rate = await self._get_implied_rate()
+        return f"{round(implied_rate * Decimal(100),2)}%"
+
     def _get_market_value(self, face_value: Decimal, implied_rate: Decimal) -> Decimal:
         return face_value / (Decimal("1") + implied_rate) ** Decimal(
             (self.expiry - time.time()) / (365 * 24 * 60 * 60)

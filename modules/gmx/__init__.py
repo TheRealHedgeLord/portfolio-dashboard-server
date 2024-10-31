@@ -7,10 +7,11 @@ from datetime import datetime
 
 from state import RDS
 from state.sql import Query
-from state.serializers import ColumnType
+from state.serializers import ColumnType, serialize
 from evm import EVM
 from dapps.gmx.gm import SupportedMarkets
 from dapps.gmx.glv import SupportedGLV
+from modules.gmx.index import create_index
 from modules.gmx.optimizer import OptimizedGMX
 from modules.gmx.constants import ALL_TRACKED_CHAINS, ALL_TRACKED_GM, ALL_TRACKED_GLV
 from web2.coingecko import CoinGecko
@@ -114,6 +115,79 @@ class GMXPerformanceTracker:
             )
         )
         print(table)
+
+    async def plot_dual_exposure_asset(
+        self, chain: str, asset: str, principal: str, weight: str
+    ) -> None:
+        canvas = Canvas()
+        table = await self.state.read(
+            Query(
+                """
+                SELECT
+                    gm.timestamp,
+                    gm.asset_amount,
+                    gm.long_token_withdraw_amount AS principal_amount,
+                    gm.short_token_withdraw_amount AS usd_amount,
+                    principal.short_token_withdraw_amount AS price
+                FROM
+                    gmx_performance_tracker gm
+                JOIN
+                    gmx_performance_tracker principal
+                ON
+                    gm.timestamp = principal.timestamp
+                WHERE
+                    gm.chain = {chain}
+                AND
+                    gm.asset = {gm_asset}
+                AND
+                    principal.asset = {principal_asset}
+                ORDER BY gm.timestamp ASC
+                """.format(
+                    chain=serialize(chain),
+                    gm_asset=serialize(asset),
+                    principal_asset=serialize(principal),
+                )
+            )
+        )
+        asset_usd_value = [
+            (
+                table.get_column("principal_amount")[i] * table.get_column("price")[i]  # type: ignore
+                + table.get_column("usd_amount")[i]
+            )
+            / table.get_column("asset_amount")[i]
+            for i in range(table.row_count)
+        ]
+        asset_performance = [value / asset_usd_value[0] for value in asset_usd_value]  # type: ignore
+        index_performance = create_index(Decimal(weight), table.get_column("price"))  # type: ignore
+        data = [
+            ["timestamp", "Asset Performance", "Index Performance"],
+            *[
+                [
+                    datetime.fromtimestamp(table.get_column("timestamp")[i]).strftime(  # type: ignore
+                        "%Y-%m-%d %H:%M"
+                    ),
+                    float(asset_performance[i]),
+                    float(index_performance[i]),
+                ]
+                for i in range(table.row_count)
+            ],
+        ]
+        timestamp_diff = (
+            table.get_column("timestamp")[-1] - table.get_column("timestamp")[0]
+        )  # type: ignore
+        apy = round(
+            (float(asset_performance[-1] / index_performance[-1]) - 1)  # type: ignore
+            * (365 * 24 * 60 * 60 / timestamp_diff)
+            * 100,
+            2,
+        )
+        days = days = int(timestamp_diff / (24 * 60 * 60))
+        canvas.add_chart(
+            "AreaChart",
+            f"{asset} (outperformance over index {days} days prorated APY {apy}%)",
+            data,
+        )
+        canvas.draw()
 
     async def plot_single_exposure_asset(self, chain: str, asset: str) -> None:
         table = await self.state.read(

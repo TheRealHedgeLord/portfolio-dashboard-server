@@ -70,7 +70,11 @@ class PortfolioModule:
             trackers = [tracker(self.state, passphrase) for tracker in self.trackers]
             await asyncio.gather(*[tracker.initialize() for tracker in trackers])
             all_modules_snapshots = await asyncio.gather(
-                *[tracker.get_snapshot() for tracker in trackers]
+                *[
+                    tracker.get_snapshot()
+                    for tracker in trackers
+                    if tracker.config.row_count > 0
+                ]
             )
             total_usd_value = Decimal("0")
             report = {}

@@ -23,11 +23,17 @@ class PendleTracker(BaseTracker):
 
     async def _process_row(self, row: dict) -> None:
         market = await get_market(row["chain"], row["market_address"])
-        pt_market_value = await market.get_pt_market_value(
-            self.cipher.decrypt(row["account"])  # type: ignore
+        pt_market_value, implied_apy = await asyncio.gather(
+            market.get_pt_market_value(
+                self.cipher.decrypt(row["account"])  # type: ignore
+            ),
+            market.get_implied_apy(),
         )
         pt = Coin.get_coin(
-            "PT", row["price_reference"], row["price_reference_config"], row["sector"]
+            f"PT {market.name}",
+            row["price_reference"],
+            row["price_reference_config"],
+            row["sector"],
         )
         usd_value = (await pt.price) * pt_market_value
         days_to_maturity = int((market.expiry - time.time()) / (24 * 60 * 60))
@@ -35,6 +41,7 @@ class PendleTracker(BaseTracker):
             [
                 market.name,
                 await pt.display_balance(pt_market_value),
+                f"Implied APY: {implied_apy}",
                 f"Time To Maturity: {days_to_maturity} days",
             ]
         )

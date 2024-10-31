@@ -39,21 +39,18 @@ class SkyTracker(BaseTracker):
         return sum(sky)  # type: ignore
 
     async def get_snapshot(self) -> tuple[Decimal, dict, dict, dict]:
-        if self.config.row_count == 0:
-            return Decimal("0"), {}, {}, {}
-        else:
-            usds, sky, price = await asyncio.gather(
-                self.get_all_staked_usds(),
-                self.get_all_sky_reward(),
-                self.sky.sky_price_from_mkr(),
-            )
-            total_usd_value = usds + sky * price
-            snapshot = {
-                "Sky": [
-                    display_stable_coins("USDS", usds),
-                    display_asset("SKY", sky, price, sky * price),
-                ]
-            }
-            platform_exposure = {"Ethereum": total_usd_value}
-            sector_exposure = {"StableCoins": usds, "Others": sky * price}
-            return total_usd_value, snapshot, platform_exposure, sector_exposure
+        usds, sky, price = await asyncio.gather(
+            self.get_all_staked_usds(),
+            self.get_all_sky_reward(),
+            self.sky.sky_price_from_mkr(),
+        )
+        total_usd_value = usds + sky * price
+        snapshot = {
+            "Sky": [
+                display_stable_coins("USDS", usds),
+                display_asset("SKY", sky, price, sky * price),
+            ]
+        }
+        platform_exposure = {"Ethereum": total_usd_value}
+        sector_exposure = {"StableCoins": usds, "Others": sky * price}
+        return total_usd_value, snapshot, platform_exposure, sector_exposure

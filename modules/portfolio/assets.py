@@ -53,7 +53,7 @@ class Coin:
                 or price_reference_config != instance.price_reference_config
                 or sector != instance.sector
             ):
-                raise Exception("conflicting coin config")
+                raise Exception(f"conflicting coin config for coin: {ticker}")
         else:
             instance = Coin(ticker, price_reference, price_reference_config, sector)
             Coin._instances[ticker] = instance
