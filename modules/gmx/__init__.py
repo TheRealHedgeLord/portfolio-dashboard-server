@@ -116,10 +116,9 @@ class GMXPerformanceTracker:
         )
         print(table)
 
-    async def plot_dual_exposure_asset(
-        self, chain: str, asset: str, principal: str, weight: str
+    async def _plot_dual_exposure_asset(
+        self, canvas: Canvas, chain: str, asset: str, principal: str, weight: str
     ) -> None:
-        canvas = Canvas()
         table = await self.state.read(
             Query(
                 """
@@ -187,9 +186,10 @@ class GMXPerformanceTracker:
             f"{asset} (outperformance over index {days} days prorated APY {apy}%)",
             data,
         )
-        canvas.draw()
 
-    async def plot_single_exposure_asset(self, chain: str, asset: str) -> None:
+    async def _plot_single_exposure_asset(
+        self, canvas: Canvas, chain: str, asset: str
+    ) -> None:
         table = await self.state.read(
             Query.get_table(
                 self.table_name,
@@ -217,7 +217,6 @@ class GMXPerformanceTracker:
         last = (
             long_token_withdraw_amount[-1] + short_token_withdraw_amount[-1]
         ) / asset_amount[-1]
-        print(last, first)
         apy = round(
             float((last - first) / first)
             * (365 * 24 * 60 * 60 / (timestamp[-1] - timestamp[0]))
@@ -239,8 +238,26 @@ class GMXPerformanceTracker:
                 for i in range(table.row_count)
             ],
         ]
-        canvas = Canvas()
         canvas.add_chart(
             "AreaChart", f"{asset} porformance ({days} days prorated APY {apy}%)", data
+        )
+
+    async def plot_single_exposure_asset(self, chain: str, *assets: str) -> None:
+        canvas = Canvas()
+        await asyncio.gather(
+            *[
+                self._plot_single_exposure_asset(canvas, chain, asset)
+                for asset in assets
+            ]
+        )
+        canvas.draw()
+
+    async def plot_dual_exposure_asset(self, chain: str, *assets: str) -> None:
+        canvas = Canvas()
+        await asyncio.gather(
+            *[
+                self._plot_dual_exposure_asset(canvas, chain, *asset.split(":"))
+                for asset in assets
+            ]
         )
         canvas.draw()
