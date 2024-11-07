@@ -6,7 +6,7 @@ from decimal import Decimal
 
 from utils import CachedClass, initialized_property
 from evm import EVM
-from evm.token import ERC20
+from evm.erc20 import ERC20
 from evm.constants import ABI
 from dapps.compound.forks import FORKS
 
@@ -75,7 +75,9 @@ class Compound(metaclass=CachedClass):
         rate = Decimal(ctoken_exchange_rate) / Decimal(
             10 ** (underlying_token.decimals + 18)
         )
-        return Decimal(ctoken_balance) * rate, Decimal(borrow_balance_stored) * rate
+        return Decimal(ctoken_balance) * rate, Decimal(borrow_balance_stored) / Decimal(
+            10**underlying_token.decimals
+        )
 
     async def get_collateral_factor(self, ctoken_address: str) -> Decimal:
         _, collateral_factor_mantissa, _ = await self.comptroller.view(

@@ -1,0 +1,317 @@
+[
+  {
+    "inputs": [
+      {
+        "components": [
+          { "internalType": "address", "name": "owner", "type": "address" },
+          {
+            "internalType": "address",
+            "name": "withdrawalAuthority",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "recoveryAuthority",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "adminTimelock",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "recoveryTimelock",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct Vault.AdminConfigs",
+        "name": "initialAdminConfigs",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  { "inputs": [], "name": "AdminConfigsUpdateError", "type": "error" },
+  { "inputs": [], "name": "Unauthorized", "type": "error" },
+  {
+    "anonymous": false,
+    "inputs": [],
+    "name": "AdminConfigsUpdateCanceled",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "components": [
+          { "internalType": "address", "name": "owner", "type": "address" },
+          {
+            "internalType": "address",
+            "name": "withdrawalAuthority",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "recoveryAuthority",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "adminTimelock",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "recoveryTimelock",
+            "type": "uint256"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct Vault.AdminConfigs",
+        "name": "pendingAdminConfigs",
+        "type": "tuple"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "unlockTime",
+        "type": "uint256"
+      }
+    ],
+    "name": "AdminConfigsUpdateRequested",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "components": [
+          { "internalType": "address", "name": "owner", "type": "address" },
+          {
+            "internalType": "address",
+            "name": "withdrawalAuthority",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "recoveryAuthority",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "adminTimelock",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "recoveryTimelock",
+            "type": "uint256"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct Vault.AdminConfigs",
+        "name": "adminConfigs",
+        "type": "tuple"
+      }
+    ],
+    "name": "AdminConfigsUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "ownerLastActiveTime",
+        "type": "uint256"
+      }
+    ],
+    "name": "OwnerLastActiveTimeUpdated",
+    "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "adminConfigs",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "address", "name": "owner", "type": "address" },
+          {
+            "internalType": "address",
+            "name": "withdrawalAuthority",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "recoveryAuthority",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "adminTimelock",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "recoveryTimelock",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct Vault.AdminConfigs",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "cancelAdminConfigsUpdate",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "executeAdminConfigsUpdate",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "nonce",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "ownerLastActiveTime",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "pendingAdminConfigs",
+    "outputs": [
+      {
+        "components": [
+          { "internalType": "address", "name": "owner", "type": "address" },
+          {
+            "internalType": "address",
+            "name": "withdrawalAuthority",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "recoveryAuthority",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "adminTimelock",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "recoveryTimelock",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct Vault.AdminConfigs",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "pendingAdminConfigsUnlockTime",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "newOwner", "type": "address" }
+    ],
+    "name": "recoverOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          { "internalType": "address", "name": "owner", "type": "address" },
+          {
+            "internalType": "address",
+            "name": "withdrawalAuthority",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "recoveryAuthority",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "adminTimelock",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "recoveryTimelock",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct Vault.AdminConfigs",
+        "name": "configs",
+        "type": "tuple"
+      }
+    ],
+    "name": "requestAdminConfigsUpdate",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "updateOwnerLastActiveTime",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "token", "type": "address" },
+      { "internalType": "address", "name": "to", "type": "address" },
+      { "internalType": "uint256", "name": "amount", "type": "uint256" },
+      { "internalType": "uint256", "name": "expiry", "type": "uint256" },
+      {
+        "components": [
+          { "internalType": "uint8", "name": "v", "type": "uint8" },
+          { "internalType": "bytes32", "name": "r", "type": "bytes32" },
+          { "internalType": "bytes32", "name": "s", "type": "bytes32" }
+        ],
+        "internalType": "struct Vault.Signature",
+        "name": "signature",
+        "type": "tuple"
+      }
+    ],
+    "name": "withdraw",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  { "stateMutability": "payable", "type": "receive" }
+]

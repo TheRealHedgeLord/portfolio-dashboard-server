@@ -7,8 +7,9 @@ from eth_utils.address import to_checksum_address
 
 from evm.chains import get_chain_meta
 from evm.contract import Contract
-from evm.token import ERC20
+from evm.erc20 import ERC20
 from evm.nft import ERC721
+from evm.vault import Vault
 from utils import CachedClass
 
 
@@ -43,3 +44,13 @@ class EVM(metaclass=CachedClass):
         nft = ERC721(self.network_id, self.rpc, to_checksum_address(nft_address))
         await nft.initialize()
         return nft
+
+    def get_vault(
+        self, valut_address: str, signer_private_key: str | None = None
+    ) -> Vault:
+        return Vault(
+            self.network_id,
+            self.rpc,
+            to_checksum_address(valut_address),
+            signer_private_key=signer_private_key,
+        )

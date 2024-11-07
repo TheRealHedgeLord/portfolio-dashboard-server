@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from utils import CachedClass, InitializableClass
 from evm import EVM
-from evm.token import ERC20
+from evm.erc20 import ERC20
 from evm.constants import ABI
 from dapps.math import ClassicPool
 from exceptions import InvalidValue
