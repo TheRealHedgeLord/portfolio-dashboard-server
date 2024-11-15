@@ -23,10 +23,12 @@ from modules.portfolio.display import (
     display_asset,
 )
 from svm import SVM
+from svm.constants import SOL_MINT
 from evm import EVM
 from bitcoin import Bitcoin
 from exceptions import NotExistError
 from web2.cex import get_cex
+from dapps.raydium import RaydiumClassicPool
 
 
 class Coin:
@@ -131,6 +133,15 @@ class Coin:
             return Decimal("1")
         elif self.price_reference == "CoinGecko":
             return await coingecko_price(self.price_reference_config["token_id"])
+        elif self.price_reference == "Raydium":
+            solana = SVM()
+            pool = await RaydiumClassicPool.get_pool(
+                self.price_reference_config["pair_address"]
+            )
+            token = await solana.get_token(self.price_reference_config["token_mint"])
+            sol = await solana.get_token(SOL_MINT)
+            reserves = await pool.get_reserve_data(token, sol)
+            return reserves.market_price * await sol_price()
         elif self.price_reference == "CEX":
             exchange = self.price_reference_config["exchange"]
             ticker = self.price_reference_config["ticker"]
