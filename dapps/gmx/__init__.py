@@ -26,6 +26,9 @@ class GMX(metaclass=CachedClass):
         self.sbfgmx = self.chain.get_contract(
             ADDRESSES[chain.name]["sbfGMX"], ABI["StakedGMXTracker"]
         )
+        self.sbegmx = self.chain.get_contract(
+            ADDRESSES[chain.name]["sbeGMX"], ABI["StakedGMXTracker"]
+        )
         self.vGMX = self.chain.get_contract(
             ADDRESSES[chain.name]["vGMX"], ABI["StakedGMXTracker"]
         )
@@ -95,14 +98,13 @@ class GMX(metaclass=CachedClass):
         balance = await glv_token.get_balance(account)
         return await self.get_glv_withdraw_amount_out(balance, glv)
 
-    async def get_gmx_staking(self, account: str) -> tuple[Decimal, Decimal, Decimal]:
-        staked_gmx, reward_gmx, reward_eth = await asyncio.gather(
+    async def get_gmx_staking(self, account: str) -> tuple[Decimal, Decimal]:
+        staked_gmx, vested_gmx, reward_gmx = await asyncio.gather(
             self.staked_gmx_tracker.view("stakedAmounts", account),
             self.vGMX.view("claimable", account),
-            self.sbfgmx.view("claimable", account),
+            self.sbegmx.view("claimable", account),
         )
         return (
             Decimal(staked_gmx) / Decimal(10**18),
-            Decimal(reward_gmx) / Decimal(10**18),
-            Decimal(reward_eth) / Decimal(10**18),
+            Decimal(vested_gmx + reward_gmx) / Decimal(10**18),
         )

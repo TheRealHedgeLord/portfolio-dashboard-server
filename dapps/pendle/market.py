@@ -40,8 +40,10 @@ class PendleMarket(InitializableClass, metaclass=CachedClass):
     def pt(self) -> Contract: ...
 
     async def _get_pt_balance(self, address: str) -> Decimal:
-        balance = await self.pt.view("balanceOf", address)
-        return Decimal(balance) / Decimal(10**18)
+        balance, decimals = await asyncio.gather(
+            self.pt.view("balanceOf", address), self.pt.view("decimals")
+        )
+        return Decimal(balance) / Decimal(10**decimals)
 
     async def _get_implied_rate(self) -> Decimal:
         state = await self.contract.view("readState", ROUTER_ADDRESS)

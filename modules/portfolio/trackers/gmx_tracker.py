@@ -85,23 +85,19 @@ class GMXTracker(BaseTracker):
                 for market in row["markets"]
             ]
         )
-        staked_gmx, reward_gmx, reward_eth = await gmx_app.get_gmx_staking(account)
+        staked_gmx, reward_gmx = await gmx_app.get_gmx_staking(account)
         dict_add(
             self._staking,  # type: ignore
             {
                 "staked_gmx": staked_gmx,
                 "reward_gmx": reward_gmx,
-                "reward_eth": reward_eth,
             },
         )
         gmx_usd_value = (staked_gmx + reward_gmx) * (await self.gmx.price)
-        reward_eth_usd_value = reward_eth * (await self.eth.price)
-        usd_value = gmx_usd_value + reward_eth_usd_value
+        usd_value = gmx_usd_value
         self._total_usd_value += usd_value
         add_to_dict(self._platform_exposure, chain.name, usd_value)
-        dict_add(
-            self._sector_exposure, {"GMX": gmx_usd_value, "ETH": reward_eth_usd_value}
-        )
+        dict_add(self._sector_exposure, {"GMX": gmx_usd_value})
 
     async def get_snapshot(self) -> tuple[Decimal, dict, dict, dict]:
         self._total_usd_value = Decimal("0")
@@ -119,7 +115,6 @@ class GMXTracker(BaseTracker):
         self._report["GMX"] += [
             "Staked " + (await self.gmx.display_balance(self._staking["staked_gmx"])),
             "Reward " + (await self.gmx.display_balance(self._staking["reward_gmx"])),
-            "Reward " + (await self.eth.display_balance(self._staking["reward_eth"])),
         ]
         return (
             self._total_usd_value,

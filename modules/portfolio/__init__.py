@@ -16,6 +16,7 @@ from modules.portfolio.display import print_snapshot_report
 from modules.portfolio.context import btc_price, eth_price, sol_price
 from modules.portfolio.trackers.coin_tracker import CoinTracker
 from modules.portfolio.trackers.compound_tracker import CompoundTracker
+from modules.portfolio.trackers.aave_tracker import AaveTracker
 from modules.portfolio.trackers.gmx_tracker import GMXTracker
 from modules.portfolio.trackers.nft_tracker import NFTTracker
 from modules.portfolio.trackers.conic_tracker import ConicTracker
@@ -27,12 +28,14 @@ from modules.portfolio.trackers.pendle_tracker import PendleTracker
 from web2.coingecko import CoinGecko
 from web2.telegram import TelegramBot
 from visualization import Canvas
+from visualization.color import get_pie_chart_color
 
 
 class PortfolioModule:
     trackers = [
         CoinTracker,
         CompoundTracker,
+        AaveTracker,
         GMXTracker,
         NFTTracker,
         ConicTracker,
@@ -227,7 +230,12 @@ class PortfolioModule:
         ]
         canvas = Canvas()
         canvas.add_chart("AreaChart", "Portfolio Value", usd_value_data)
-        canvas.add_chart("PieChart", "Sector Exposure", sector_pie_data)
+        canvas.add_chart(
+            "PieChart",
+            "Sector Exposure",
+            sector_pie_data,
+            options=get_pie_chart_color(sector_pie_data),
+        )
         canvas.add_chart("PieChart", "Platform Exposure", platform_pie_data)
         canvas.add_chart(
             "AreaChart",
