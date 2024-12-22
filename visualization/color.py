@@ -12,10 +12,12 @@ class Color(StrEnum):
     Solana = "#8E44AD"
     StableCoins = "#16A085"
     Gold = "#FFD700"
-    NFT = "#FF69B4"
+    NFT = "#FF00FF"
     MemeCoins = "#00FFA3"
     GMX = "#0057B7"
     LINK = "#1E90FF"
+    UNI = "#FF69B4"
+    AAVE = "#9391F0"
 
     @staticmethod
     def get_color(sector: str) -> str:

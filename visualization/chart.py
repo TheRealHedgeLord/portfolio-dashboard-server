@@ -5,7 +5,7 @@ import webbrowser
 
 from typing import Literal
 
-from visualization.src import GOOGLE_CHART_HTML, CHART_FUNCTION_SRC, CHART_DIV_SRC
+from visualization.src import CHART_FUNCTION_SRC, CHART_DIV_SRC
 from visualization.htmlutils import insert
 from utils import snake_to_camel
 

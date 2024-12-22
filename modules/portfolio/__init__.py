@@ -31,6 +31,9 @@ from visualization import Canvas
 from visualization.color import get_pie_chart_color
 
 
+DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
+
+
 class PortfolioModule:
     trackers = [
         CoinTracker,
@@ -126,16 +129,17 @@ class PortfolioModule:
                 f"Error happend when taking snapshot, id: {error_id}",
             )
 
-    async def get_snapshot(self) -> None:
+    async def get_snapshot(self, index: str = "0") -> None:
+        i = int(index)
         table = await self.state.read(
             Query(
-                f"SELECT * FROM {self.snapshot_table_name} ORDER BY timestamp DESC LIMIT 1"
+                f"SELECT * FROM {self.snapshot_table_name} ORDER BY timestamp DESC LIMIT {i+1}"
             )
         )
-        timestamp = table.get_column("timestamp")[0]
-        total_usd_value = table.get_column("total_usd_value")[0]
-        market_prices = table.get_column("market_prices")[0]
-        report = table.get_column("report")[0]
+        timestamp = table.get_column("timestamp")[i]
+        total_usd_value = table.get_column("total_usd_value")[i]
+        market_prices = table.get_column("market_prices")[i]
+        report = table.get_column("report")[i]
         snapshot = print_snapshot_report(timestamp, total_usd_value, market_prices, report)  # type: ignore
         print(snapshot)
 
@@ -169,8 +173,15 @@ class PortfolioModule:
         sector_exposure: list[dict[str, float]] = table.get_column("sector_exposure")  # type: ignore
         usd_value_data = [["timestamp", "USD Value"]] + [
             [
-                datetime.fromtimestamp(timestamp[i]).strftime("%Y-%m-%d %H:%M"),
+                datetime.fromtimestamp(timestamp[i]).strftime(DATETIME_FORMAT),
                 float(total_usd_value[i]),
+            ]
+            for i in range(table.row_count)
+        ]
+        performance_data = [["timestamp", "PnL"]] + [
+            [
+                datetime.fromtimestamp(timestamp[i]).strftime(DATETIME_FORMAT),
+                float(total_usd_value[i] / total_usd_value[0] - Decimal(1)) * 100,
             ]
             for i in range(table.row_count)
         ]
@@ -179,18 +190,6 @@ class PortfolioModule:
             for key in row:
                 if key not in sector_heads:
                     sector_heads.append(key)
-        sector_area_data = [["timestamp"] + sector_heads] + [
-            [datetime.fromtimestamp(timestamp[i]).strftime("%Y-%m-%d %H:%M")]
-            + [
-                (
-                    0
-                    if key not in sector_exposure[i]
-                    else sector_exposure[i][key] / float(total_usd_value[i])
-                )
-                for key in sector_heads
-            ]
-            for i in range(table.row_count)
-        ]
         sector_latest = sector_exposure[-1]
         sector_pie_data = [
             ["Sector", "Exposure"],
@@ -206,18 +205,6 @@ class PortfolioModule:
             for key in row:
                 if key not in platform_heads:
                     platform_heads.append(key)
-        platform_area_data = [["timestamp"] + platform_heads] + [
-            [datetime.fromtimestamp(timestamp[i]).strftime("%Y-%m-%d %H:%M")]
-            + [
-                (
-                    0
-                    if key not in platform_exposure[i]
-                    else platform_exposure[i][key] / float(total_usd_value[i])
-                )
-                for key in platform_heads
-            ]
-            for i in range(table.row_count)
-        ]
         platform_latest = platform_exposure[-1]
         platform_pie_data = [
             ["Platform", "Exposure"],
@@ -229,7 +216,22 @@ class PortfolioModule:
             ],
         ]
         canvas = Canvas()
-        canvas.add_chart("AreaChart", "Portfolio Value", usd_value_data)
+        canvas.add_chart(
+            "AreaChart",
+            "Portfolio Value",
+            usd_value_data,
+            options={
+                "vAxis": {
+                    "viewWindow": {"min": int(min(total_usd_value) / 1000000) * 1000000}
+                }
+            },
+        )
+        canvas.add_chart(
+            "AreaChart",
+            "Portfolio Performance",
+            performance_data,
+            options={"vAxis": {"format": "#'%'"}},
+        )
         canvas.add_chart(
             "PieChart",
             "Sector Exposure",
@@ -237,16 +239,4 @@ class PortfolioModule:
             options=get_pie_chart_color(sector_pie_data),
         )
         canvas.add_chart("PieChart", "Platform Exposure", platform_pie_data)
-        canvas.add_chart(
-            "AreaChart",
-            "Sector Exposure Over Time",
-            sector_area_data,
-            options={"is_stacked": True},
-        )
-        canvas.add_chart(
-            "AreaChart",
-            "Platform Exposure Over Time",
-            platform_area_data,
-            options={"is_stacked": True},
-        )
         canvas.draw()

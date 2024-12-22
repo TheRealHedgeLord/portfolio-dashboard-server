@@ -18,6 +18,9 @@ from web2.coingecko import CoinGecko
 from visualization import Canvas
 
 
+DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
+
+
 class GMXPerformanceTracker:
     table_name = "gmx_performance_tracker"
     table_schema = {
@@ -163,7 +166,7 @@ class GMXPerformanceTracker:
             *[
                 [
                     datetime.fromtimestamp(table.get_column("timestamp")[i]).strftime(  # type: ignore
-                        "%Y-%m-%d %H:%M"
+                        DATETIME_FORMAT
                     ),
                     float(asset_performance[i]),
                     float(index_performance[i]),
@@ -229,7 +232,7 @@ class GMXPerformanceTracker:
             ["timestamp", f"{underlying} / {asset}"],
             *[
                 [
-                    datetime.fromtimestamp(timestamp[i]).strftime("%Y-%m-%d %H:%M"),
+                    datetime.fromtimestamp(timestamp[i]).strftime(DATETIME_FORMAT),
                     float(
                         (long_token_withdraw_amount[i] + short_token_withdraw_amount[i])
                         / asset_amount[i]
