@@ -8,6 +8,7 @@ from eth_utils.address import to_checksum_address
 from evm.chains import get_chain_meta
 from evm.contract import Contract
 from evm.erc20 import ERC20
+from evm.erc1967 import ERC1967
 from evm.nft import ERC721
 from evm.vault import Vault
 from utils import CachedClass
@@ -34,6 +35,9 @@ class EVM(metaclass=CachedClass):
 
     def get_contract(self, address: str, abi: list) -> Contract:
         return Contract(self.network_id, self.rpc, to_checksum_address(address), abi)
+
+    def get_proxy(self, proxy_address: str) -> ERC1967:
+        return ERC1967(self.network_id, self.rpc, to_checksum_address(proxy_address))
 
     async def get_token(self, token_address: str) -> ERC20:
         token = ERC20(self.network_id, self.rpc, to_checksum_address(token_address))
