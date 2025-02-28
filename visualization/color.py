@@ -6,10 +6,13 @@ from hashlib import sha256
 class Color(StrEnum):
     BTC = "#F7931A"
     Bitcoin = "#F7931A"
+    Ordinal = "#F8531A"
     ETH = "#3E517A"
     Ethereum = "#3E517A"
-    SOL = "#8E44AD"
-    Solana = "#8E44AD"
+    Base = "#2151F5"
+    ArbitrumOne = "#4EA7F8"
+    SOL = "#9248F1"
+    Solana = "#9248F1"
     StableCoins = "#16A085"
     Gold = "#FFD700"
     NFT = "#FF00FF"
@@ -18,6 +21,7 @@ class Color(StrEnum):
     LINK = "#1E90FF"
     UNI = "#FF69B4"
     AAVE = "#9391F0"
+    PENDLE = "#283E42"
 
     @staticmethod
     def get_color(sector: str) -> str:

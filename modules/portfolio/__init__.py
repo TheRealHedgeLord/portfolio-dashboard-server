@@ -21,6 +21,7 @@ from modules.portfolio.trackers.gmx_tracker import GMXTracker
 from modules.portfolio.trackers.nft_tracker import NFTTracker
 from modules.portfolio.trackers.conic_tracker import ConicTracker
 from modules.portfolio.trackers.sky_tracker import SkyTracker
+from modules.portfolio.trackers.ethena_tracker import EthenaTracker
 from modules.portfolio.trackers.benddao_ape_staking_tracker import (
     BendDaoApeStakingTracker,
 )
@@ -45,6 +46,7 @@ class PortfolioModule:
         SkyTracker,
         BendDaoApeStakingTracker,
         PendleTracker,
+        EthenaTracker,
     ]
     snapshot_table_name = "portfolio_snapshots"
     snapshot_table_schema = {
@@ -238,5 +240,10 @@ class PortfolioModule:
             sector_pie_data,
             options=get_pie_chart_color(sector_pie_data),
         )
-        canvas.add_chart("PieChart", "Platform Exposure", platform_pie_data)
+        canvas.add_chart(
+            "PieChart",
+            "Platform Exposure",
+            platform_pie_data,
+            options=get_pie_chart_color(platform_pie_data),
+        )
         canvas.draw()
