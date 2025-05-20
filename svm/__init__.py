@@ -1,3 +1,5 @@
+import asyncio
+import random
 from decimal import Decimal
 
 from solana.rpc.async_api import AsyncClient
@@ -31,5 +33,6 @@ class SVM(metaclass=CachedClass):
         return token
 
     async def get_balance(self, account: str) -> Decimal:
+        await asyncio.sleep(random.uniform(0, 3))
         response = await self.rpc.get_balance(Pubkey.from_string(account))
         return Decimal(response.value) / Decimal(10**9)
