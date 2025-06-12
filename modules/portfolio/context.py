@@ -8,6 +8,7 @@ from dapps.lido import Lido
 from dapps.jito import Jito
 from dapps.makerdao import MakerDAO
 from dapps.sky import SUSDS
+from dapps.resolv import get_rlp_price
 
 
 _coingecko_client = CoinGecko(environ["COINGECKO_API_KEY"])
@@ -59,3 +60,8 @@ async def sdai() -> Decimal:
 @GlobalContext.with_context
 async def susds() -> Decimal:
     return await _susds.usds_per_susds()
+
+
+@GlobalContext.with_context
+async def rlp() -> Decimal:
+    return await get_rlp_price()

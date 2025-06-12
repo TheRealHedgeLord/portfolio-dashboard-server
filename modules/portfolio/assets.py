@@ -13,6 +13,7 @@ from modules.portfolio.context import (
     jitosol,
     sdai,
     susds,
+    rlp,
 )
 from modules.portfolio.display import (
     display_btc_asset,
@@ -118,6 +119,9 @@ class Coin:
         elif self.price_reference == "sUSDS":
             multiplier = await susds()
             return balance * multiplier
+        elif self.price_reference == "RLP":
+            multiplier = await rlp()
+            return balance * multiplier
         else:
             return balance
 
@@ -129,7 +133,7 @@ class Coin:
             return await eth_price()
         elif self.price_reference in ["SOL", "jitoSOL"]:
             return await sol_price()
-        elif self.price_reference in ["USD", "sDAI", "sUSDS"]:
+        elif self.price_reference in ["USD", "sDAI", "sUSDS", "RLP"]:
             return Decimal("1")
         elif self.price_reference == "CoinGecko":
             return await coingecko_price(self.price_reference_config["token_id"])

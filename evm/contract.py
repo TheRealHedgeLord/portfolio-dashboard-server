@@ -1,5 +1,7 @@
 import hashlib
+import asyncio
 
+from random import uniform
 from typing import Any
 
 from web3 import AsyncWeb3
@@ -40,6 +42,7 @@ class Contract(metaclass=CachedClass):
         return hashlib.sha256(call_repr).hexdigest()
 
     async def _view(self, method, *args) -> Any:
+        await asyncio.sleep(uniform(0, 5))
         return await getattr(self.contract.functions, method)(*args).call()
 
     async def view(

@@ -22,6 +22,8 @@ class Color(StrEnum):
     UNI = "#FF69B4"
     AAVE = "#9391F0"
     PENDLE = "#283E42"
+    HYPE = "#AFF9E5"
+    HyperEVM = "#AFF9E5"
 
     @staticmethod
     def get_color(sector: str) -> str:

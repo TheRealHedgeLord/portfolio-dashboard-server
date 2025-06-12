@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import asyncio
+
 from decimal import Decimal
+from random import uniform
 
 from web3 import AsyncWeb3
 from eth_utils.address import to_checksum_address
@@ -30,6 +33,7 @@ class EVM(metaclass=CachedClass):
         return f"<EVM network_id: {self.network_id}>"
 
     async def get_balance(self, address: str) -> Decimal:
+        await asyncio.sleep(uniform(0, 5))
         wei = await self.rpc.eth.get_balance(to_checksum_address(address))
         return Decimal(wei) / Decimal(10**18)
 
